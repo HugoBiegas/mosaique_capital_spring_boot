@@ -1,4 +1,4 @@
-// com/master/mosaique_capital/mapper/impl/UserMapperImpl.java
+// src/main/java/com/master/mosaique_capital/mapper/impl/UserMapperImpl.java
 package com.master.mosaique_capital.mapper.impl;
 
 import com.master.mosaique_capital.dto.auth.SignupRequest;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 
-@Component
+@Component("customUserMapperImpl") // Renommez le bean
 public class UserMapperImpl implements UserMapper {
 
     @Override
