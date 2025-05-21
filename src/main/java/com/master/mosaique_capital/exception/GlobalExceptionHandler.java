@@ -2,6 +2,7 @@
 package com.master.mosaique_capital.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -23,7 +24,9 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 LocalDateTime.now());
 
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
@@ -33,7 +36,9 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 LocalDateTime.now());
 
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -43,7 +48,9 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 LocalDateTime.now());
 
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -53,7 +60,9 @@ public class GlobalExceptionHandler {
                 "Accès refusé",
                 LocalDateTime.now());
 
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -65,7 +74,9 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errors);
     }
 
     @ExceptionHandler(Exception.class)
@@ -75,9 +86,12 @@ public class GlobalExceptionHandler {
                 "Une erreur interne s'est produite",
                 LocalDateTime.now());
 
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
     }
 
+    // Classe avec getters et setters
     public static class ErrorResponse {
         private int status;
         private String message;
@@ -89,6 +103,29 @@ public class GlobalExceptionHandler {
             this.timestamp = timestamp;
         }
 
-        // Getters et setters
+        // Getters et setters pour permettre la sérialisation
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(LocalDateTime timestamp) {
+            this.timestamp = timestamp;
+        }
     }
 }

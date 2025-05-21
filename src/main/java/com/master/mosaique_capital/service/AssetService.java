@@ -4,11 +4,13 @@ package com.master.mosaique_capital.service;
 import com.master.mosaique_capital.dto.asset.AssetCreateRequest;
 import com.master.mosaique_capital.dto.asset.AssetDto;
 import com.master.mosaique_capital.entity.Asset;
+import com.master.mosaique_capital.entity.AssetTypeEntity;
 import com.master.mosaique_capital.entity.User;
 import com.master.mosaique_capital.enums.AssetType;
 import com.master.mosaique_capital.exception.ResourceNotFoundException;
 import com.master.mosaique_capital.mapper.AssetMapper;
 import com.master.mosaique_capital.repository.AssetRepository;
+import com.master.mosaique_capital.repository.AssetTypeRepository;
 import com.master.mosaique_capital.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +29,7 @@ public class AssetService {
 
     private final AssetRepository assetRepository;
     private final UserRepository userRepository;
+    private final AssetTypeRepository assetTypeRepository; // Nouveau repository
     private final AssetMapper assetMapper;
 
     @Transactional(readOnly = true)
@@ -54,7 +57,13 @@ public class AssetService {
     public AssetDto createAsset(AssetCreateRequest dto) {
         User currentUser = getCurrentUser();
 
+        // Récupérer le type d'actif de la base de données
+        AssetTypeEntity assetType = assetTypeRepository.findByCode(dto.getType().name())
+                .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + dto.getType().name()));
+
+        // Créer et configurer l'entité Asset
         Asset asset = assetMapper.toEntity(dto);
+        asset.setType(assetType); // Assigner directement l'entité récupérée
         asset.setOwner(currentUser);
 
         Asset savedAsset = assetRepository.save(asset);
@@ -66,9 +75,20 @@ public class AssetService {
         Asset asset = findAssetById(id);
         checkAssetOwnership(asset);
 
-        assetMapper.updateEntityFromDto(dto, asset);
-        Asset updatedAsset = assetRepository.save(asset);
+        // Si le type change, récupérer le nouveau type
+        if (dto.getType() != null) {
+            AssetTypeEntity assetType = assetTypeRepository.findByCode(dto.getType().name())
+                    .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + dto.getType().name()));
+            asset.setType(assetType);
+        }
 
+        // Mettre à jour les autres champs
+        if (dto.getName() != null) asset.setName(dto.getName());
+        if (dto.getDescription() != null) asset.setDescription(dto.getDescription());
+        if (dto.getCurrentValue() != null) asset.setCurrentValue(dto.getCurrentValue());
+        if (dto.getCurrency() != null) asset.setCurrency(dto.getCurrency());
+
+        Asset updatedAsset = assetRepository.save(asset);
         return assetMapper.toDto(updatedAsset);
     }
 
