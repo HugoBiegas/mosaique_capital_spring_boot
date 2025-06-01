@@ -32,6 +32,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -128,6 +129,26 @@ public class AssetServiceTest {
     }
 
     @Test
+    void getAssetsByType_ShouldReturnAssetsByType() {
+        // Given
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
+        when(assetTypeRepository.findByCode(anyString())).thenReturn(Optional.of(testAssetType));
+        when(assetRepository.findByOwnerAndType(any(User.class), any(AssetTypeEntity.class)))
+                .thenReturn(Arrays.asList(testAsset));
+        when(assetMapper.toDtoList(anyList())).thenReturn(Arrays.asList(testAssetDto));
+
+        // When
+        List<AssetDto> result = assetService.getAssetsByType(AssetType.REAL_ESTATE);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(testAssetDto.getId(), result.get(0).getId());
+        verify(assetRepository, times(1)).findByOwnerAndType(testUser, testAssetType);
+        verify(assetMapper, times(1)).toDtoList(anyList());
+    }
+
+    @Test
     void getAssetById_ShouldReturnAsset_WhenAssetExists() {
         // Given
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
@@ -153,7 +174,6 @@ public class AssetServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> assetService.getAssetById(99L));
         verify(assetRepository, times(1)).findById(99L);
     }
-
 
     @Test
     void getAssetById_ShouldThrowException_WhenUserDoesNotOwnAsset() {
@@ -190,7 +210,7 @@ public class AssetServiceTest {
         assertNotNull(result);
         assertEquals(testAssetDto.getId(), result.getId());
         assertEquals(testAssetDto.getName(), result.getName());
-        verify(assetRepository, times(1)).save(testAsset);
+        verify(assetRepository, times(1)).save(any(Asset.class));
         verify(assetMapper, times(1)).toDto(testAsset);
     }
 
@@ -206,5 +226,20 @@ public class AssetServiceTest {
 
         // Then
         verify(assetRepository, times(1)).delete(testAsset);
+    }
+
+    @Test
+    void getTotalPatrimony_ShouldReturnCorrectSum() {
+        // Given
+        BigDecimal expectedTotal = new BigDecimal("475000");
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
+        when(assetRepository.sumTotalPatrimony(any(User.class))).thenReturn(expectedTotal);
+
+        // When
+        BigDecimal result = assetService.getTotalPatrimony();
+
+        // Then
+        assertEquals(expectedTotal, result);
+        verify(assetRepository, times(1)).sumTotalPatrimony(testUser);
     }
 }

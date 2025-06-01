@@ -20,8 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class AssetService {
 
     private final AssetRepository assetRepository;
     private final UserRepository userRepository;
-    private final AssetTypeRepository assetTypeRepository; // Nouveau repository
+    private final AssetTypeRepository assetTypeRepository;
     private final AssetMapper assetMapper;
 
     @Transactional(readOnly = true)
@@ -42,7 +44,10 @@ public class AssetService {
     @Transactional(readOnly = true)
     public List<AssetDto> getAssetsByType(AssetType type) {
         User currentUser = getCurrentUser();
-        List<Asset> assets = assetRepository.findByOwnerAndType(currentUser, type);
+        AssetTypeEntity assetTypeEntity = assetTypeRepository.findByCode(type.name())
+                .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + type.name()));
+
+        List<Asset> assets = assetRepository.findByOwnerAndType(currentUser, assetTypeEntity);
         return assetMapper.toDtoList(assets);
     }
 
@@ -63,7 +68,7 @@ public class AssetService {
 
         // Créer et configurer l'entité Asset
         Asset asset = assetMapper.toEntity(dto);
-        asset.setType(assetType); // Assigner directement l'entité récupérée
+        asset.setType(assetType);
         asset.setOwner(currentUser);
 
         Asset savedAsset = assetRepository.save(asset);
@@ -96,21 +101,30 @@ public class AssetService {
     public void deleteAsset(Long id) {
         Asset asset = findAssetById(id);
         checkAssetOwnership(asset);
-
         assetRepository.delete(asset);
     }
 
     @Transactional(readOnly = true)
     public BigDecimal getTotalPatrimony() {
         User currentUser = getCurrentUser();
-        BigDecimal total = assetRepository.sumTotalPatrimony(currentUser);
-        return total != null ? total : BigDecimal.ZERO;
+        return assetRepository.sumTotalPatrimony(currentUser);
     }
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getAssetDistribution() {
         User currentUser = getCurrentUser();
-        return assetRepository.getAssetDistributionByType(currentUser);
+        List<AssetRepository.AssetDistributionProjection> projections =
+                assetRepository.getAssetDistributionByType(currentUser);
+
+        return projections.stream()
+                .map(projection -> {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("type", projection.getType());
+                    result.put("label", projection.getLabel());
+                    result.put("total", projection.getTotal());
+                    return result;
+                })
+                .collect(Collectors.toList());
     }
 
     public Asset findAssetById(Long id) {

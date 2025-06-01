@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,16 +45,24 @@ public class AssetRepositoryTest {
         testUser.setEmail("test@example.com");
         testUser = userRepository.save(testUser);
 
-        // Créer les types d'actifs
-        realEstateType = new AssetTypeEntity();
-        realEstateType.setCode(AssetType.REAL_ESTATE.name());
-        realEstateType.setLabel(AssetType.REAL_ESTATE.getLabel());
-        realEstateType = assetTypeRepository.save(realEstateType);
+        // Récupérer ou créer les types d'actifs
+        realEstateType = assetTypeRepository.findByCode(AssetType.REAL_ESTATE.name())
+                .orElseGet(() -> {
+                    AssetTypeEntity newType = new AssetTypeEntity();
+                    newType.setCode(AssetType.REAL_ESTATE.name());
+                    newType.setLabel(AssetType.REAL_ESTATE.getLabel());
+                    newType.setDescription("Biens immobiliers");
+                    return assetTypeRepository.save(newType);
+                });
 
-        stockType = new AssetTypeEntity();
-        stockType.setCode(AssetType.STOCK.name());
-        stockType.setLabel(AssetType.STOCK.getLabel());
-        stockType = assetTypeRepository.save(stockType);
+        stockType = assetTypeRepository.findByCode(AssetType.STOCK.name())
+                .orElseGet(() -> {
+                    AssetTypeEntity newType = new AssetTypeEntity();
+                    newType.setCode(AssetType.STOCK.name());
+                    newType.setLabel(AssetType.STOCK.getLabel());
+                    newType.setDescription("Actions en bourse");
+                    return assetTypeRepository.save(newType);
+                });
 
         // Créer des actifs de test
         Asset asset1 = new Asset();
@@ -91,8 +98,8 @@ public class AssetRepositoryTest {
     @Test
     void findByOwnerAndType_ShouldReturnAssetsOfSpecificType() {
         // When
-        List<Asset> realEstateAssets = assetRepository.findByOwnerAndType(testUser, AssetType.REAL_ESTATE);
-        List<Asset> stockAssets = assetRepository.findByOwnerAndType(testUser, AssetType.STOCK);
+        List<Asset> realEstateAssets = assetRepository.findByOwnerAndType(testUser, realEstateType);
+        List<Asset> stockAssets = assetRepository.findByOwnerAndType(testUser, stockType);
 
         // Then
         assertEquals(1, realEstateAssets.size());
@@ -114,19 +121,20 @@ public class AssetRepositoryTest {
     @Test
     void getAssetDistributionByType_ShouldReturnCorrectDistribution() {
         // When
-        List<Map<String, Object>> distribution = assetRepository.getAssetDistributionByType(testUser);
+        List<AssetRepository.AssetDistributionProjection> distribution =
+                assetRepository.getAssetDistributionByType(testUser);
 
         // Then
         assertEquals(2, distribution.size());
 
         // Trouver la distribution pour chaque type
-        Map<String, Object> realEstateDistribution = distribution.stream()
-                .filter(d -> d.get("type").equals(realEstateType))
+        AssetRepository.AssetDistributionProjection realEstateDistribution = distribution.stream()
+                .filter(d -> d.getType().equals(AssetType.REAL_ESTATE.name()))
                 .findFirst()
                 .orElse(null);
 
-        Map<String, Object> stockDistribution = distribution.stream()
-                .filter(d -> d.get("type").equals(stockType))
+        AssetRepository.AssetDistributionProjection stockDistribution = distribution.stream()
+                .filter(d -> d.getType().equals(AssetType.STOCK.name()))
                 .findFirst()
                 .orElse(null);
 
@@ -134,7 +142,11 @@ public class AssetRepositoryTest {
         assertNotNull(stockDistribution);
 
         // Vérifier les montants
-        assertEquals(new BigDecimal("450000"), realEstateDistribution.get("total"));
-        assertEquals(new BigDecimal("25000"), stockDistribution.get("total"));
+        assertEquals(new BigDecimal("450000"), realEstateDistribution.getTotal());
+        assertEquals(new BigDecimal("25000"), stockDistribution.getTotal());
+
+        // Vérifier les labels
+        assertEquals(AssetType.REAL_ESTATE.getLabel(), realEstateDistribution.getLabel());
+        assertEquals(AssetType.STOCK.getLabel(), stockDistribution.getLabel());
     }
 }

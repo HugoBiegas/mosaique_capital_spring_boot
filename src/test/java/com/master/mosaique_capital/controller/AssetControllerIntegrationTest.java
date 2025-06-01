@@ -72,12 +72,13 @@ public class AssetControllerIntegrationTest {
         assetRepository.deleteAll();
         userRepository.deleteAll();
 
-        // Vérifier si le type d'actif existe déjà, sinon le créer
+        // Récupérer ou créer le type d'actif REAL_ESTATE
         testAssetType = assetTypeRepository.findByCode(AssetType.REAL_ESTATE.name())
                 .orElseGet(() -> {
                     AssetTypeEntity newType = new AssetTypeEntity();
                     newType.setCode(AssetType.REAL_ESTATE.name());
                     newType.setLabel(AssetType.REAL_ESTATE.getLabel());
+                    newType.setDescription("Biens immobiliers");
                     return assetTypeRepository.save(newType);
                 });
 
