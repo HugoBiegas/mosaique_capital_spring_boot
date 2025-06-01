@@ -1,6 +1,9 @@
 // com/master/mosaique_capital/enums/AssetType.java
 package com.master.mosaique_capital.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum AssetType {
     REAL_ESTATE("Immobilier"),
     STOCK("Actions"),
@@ -17,7 +20,4 @@ public enum AssetType {
         this.label = label;
     }
 
-    public String getLabel() {
-        return label;
-    }
 }

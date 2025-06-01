@@ -1,6 +1,8 @@
 // com/master/mosaique_capital/exception/GlobalExceptionHandler.java
 package com.master.mosaique_capital.exception;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -92,7 +94,10 @@ public class GlobalExceptionHandler {
     }
 
     // Classe avec getters et setters
+    @Setter
+    @Getter
     public static class ErrorResponse {
+        // Getters et setters pour permettre la sérialisation
         private int status;
         private String message;
         private LocalDateTime timestamp;
@@ -103,29 +108,5 @@ public class GlobalExceptionHandler {
             this.timestamp = timestamp;
         }
 
-        // Getters et setters pour permettre la sérialisation
-        public int getStatus() {
-            return status;
-        }
-
-        public void setStatus(int status) {
-            this.status = status;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public LocalDateTime getTimestamp() {
-            return timestamp;
-        }
-
-        public void setTimestamp(LocalDateTime timestamp) {
-            this.timestamp = timestamp;
-        }
     }
 }
