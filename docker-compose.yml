@@ -21,14 +21,19 @@ services:
     ports:
       - "${DATABASE_PORT}:3306"  # Port externe configurable via .env
     volumes:
-      - mysql_data:/var/lib/mysql
+      # 🗄️ VOLUME LOCAL PERSISTANT (non versionné)
+      - ./data/mysql:/var/lib/mysql
+      # Script d'initialisation
       - ./docs/mosaique_capital.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # Configuration MySQL personnalisée
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d:ro
     command: >
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
       --innodb-buffer-pool-size=256M
       --max-connections=100
+      --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DATABASE_PASSWORD}"]
       interval: 30s
@@ -62,7 +67,10 @@ services:
     ports:
       - "${REDIS_PORT}:6379"
     volumes:
-      - redis_data:/data
+      # 🗄️ VOLUME LOCAL PERSISTANT (non versionné)
+      - ./data/redis:/data
+      # Configuration Redis personnalisée
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 30s
@@ -135,7 +143,10 @@ services:
     ports:
       - "${SERVER_PORT}:9999"
     volumes:
-      - app_logs:/app/logs
+      # 📝 LOGS LOCAUX PERSISTANTS (non versionnés)
+      - ./data/logs:/app/logs
+      # 📁 Configuration externe optionnelle
+      - ./docker/app/config:/app/config:ro
     depends_on:
       mysql:
         condition: service_healthy
@@ -226,17 +237,6 @@ services:
       options:
         max-size: "5m"
         max-file: "2"
-
-# =================================================================
-# VOLUMES
-# =================================================================
-volumes:
-  mysql_data:
-    driver: local
-  redis_data:
-    driver: local
-  app_logs:
-    driver: local
 
 # =================================================================
 # NETWORKS

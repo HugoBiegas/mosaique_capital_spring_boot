@@ -1,10 +1,56 @@
-HELP.md
+# =================================================================
+# .gitignore - MOSAÏQUE CAPITAL
+# =================================================================
+
+# =================================================================
+# DONNÉES LOCALES DOCKER (VOLUMES PERSISTANTS)
+# =================================================================
+/data/
+data/
+# Spécifiquement :
+data/mysql/
+data/redis/
+data/logs/
+data/backups/
+
+# =================================================================
+# CONFIGURATION ET SECRETS
+# =================================================================
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# Fichiers de secrets
+secrets/
+*.key
+*.pem
+*.p12
+*.jks
+
+# =================================================================
+# JAVA / MAVEN
+# =================================================================
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# =================================================================
+# IDE
+# =================================================================
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
 .apt_generated
 .classpath
 .factorypath
@@ -12,12 +58,13 @@ target/
 .settings
 .springBeans
 .sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+### VS Code ###
+.vscode/
+*.code-workspace
 
 ### NetBeans ###
 /nbproject/private/
@@ -25,9 +72,110 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# =================================================================
+# LOGS ET TEMPORAIRES
+# =================================================================
+logs/
+*.log
+*.log.*
+log/
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Logs Spring Boot
+spring.log
+application.log
+
+# =================================================================
+# SYSTÈME D'EXPLOITATION
+# =================================================================
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Windows ###
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+### Linux ###
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =================================================================
+# DOCKER
+# =================================================================
+.docker/
+# Garder les fichiers de config Docker
+!docker/
+
+# =================================================================
+# TESTS ET COUVERTURE
+# =================================================================
+coverage/
+*.coverage
+.nyc_output
+junit.xml
+test-results/
+.sonar/
+
+# =================================================================
+# DOCUMENTATION GÉNÉRÉE
+# =================================================================
+/docs/javadoc/
+/docs/build/
+
+# =================================================================
+# CACHE ET BUILD
+# =================================================================
+.gradle/
+build/
+node_modules/
+.cache/
+dist/
+
+# =================================================================
+# AUTRES
+# =================================================================
+*.orig
+*.rej
+*conflict*
+.merge_file_*
+
+# Certificats et clés de développement
+*.crt
+*.csr
+localhost.key
+localhost.crt
