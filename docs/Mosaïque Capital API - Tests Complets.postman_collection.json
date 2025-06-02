@@ -1,0 +1,1519 @@
+{
+	"info": {
+		"_postman_id": "f4568c24-4b56-4e27-bb5c-892e72ef0236",
+		"name": "Mosaïque Capital API - Tests Complets",
+		"description": "Collection complète pour tester tous les endpoints de l'API Mosaïque Capital avec variables dynamiques et tests automatisés",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30798134"
+	},
+	"item": [
+		{
+			"name": "01 - Setup & Authentication",
+			"item": [
+				{
+					"name": "01.1 - Create Test User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Reset de session pour un nouveau run",
+									"pm.environment.unset('session_id');",
+									"pm.environment.unset('jwt_token');",
+									"pm.environment.unset('refresh_token');",
+									"pm.environment.unset('user_id');",
+									"pm.environment.unset('real_estate_asset_id');",
+									"pm.environment.unset('stock_asset_id');",
+									"pm.environment.unset('bank_account_asset_id');",
+									"pm.environment.unset('historical_valuation_id');",
+									"pm.environment.unset('current_valuation_id');",
+									"console.log('Session reset completed');"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('User created successfully', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response contains success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('succès');",
+									"});",
+									"",
+									"// Log des informations de l'utilisateur créé",
+									"console.log('User created with username: ' + pm.environment.get('test_username'));",
+									"console.log('User created with email: ' + pm.environment.get('test_email'));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"hugobiegas\",\n    \"email\": \"hugobiegas@gmail.com\",\n    \"password\": \"hugo.biegas@gmail.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "01.2 - Login and Get JWT Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Login successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains JWT tokens', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('accessToken');",
+									"    pm.expect(responseJson).to.have.property('refreshToken');",
+									"    pm.expect(responseJson).to.have.property('username');",
+									"    pm.expect(responseJson).to.have.property('id');",
+									"});",
+									"",
+									"// Store tokens and user info in environment",
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('jwt_token', responseJson.accessToken);",
+									"    pm.environment.set('refresh_token', responseJson.refreshToken);",
+									"    pm.environment.set('user_id', responseJson.id);",
+									"    console.log('JWT Token and user info saved successfully');",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"hugobiegas\",\n    \"password\": \"hugo.biegas@gmail.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "01.3 - setup mfa",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/setup-mfa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"setup-mfa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "01.4 - verify mfa",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/verify-mfa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"verify-mfa"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Tests d'authentification et configuration initiale"
+		},
+		{
+			"name": "02 - Asset Management",
+			"item": [
+				{
+					"name": "02.1 - Get All Assets (Initially Empty)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response is an array', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Initially no assets', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.lengthOf(0);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02.2 - Create Real Estate Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Asset created successfully', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response contains asset data', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('id');",
+									"    pm.expect(responseJson).to.have.property('name');",
+									"    pm.expect(responseJson).to.have.property('type');",
+									"    pm.expect(responseJson).to.have.property('currentValue');",
+									"    pm.expect(responseJson.name).to.eql('Appartement Paris 15ème');",
+									"    pm.expect(responseJson.type).to.eql('REAL_ESTATE');",
+									"    pm.expect(responseJson.currentValue).to.eql(450000);",
+									"});",
+									"",
+									"// Store asset ID for future tests",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('real_estate_asset_id', responseJson.id);",
+									"    console.log('Real estate asset ID saved: ' + responseJson.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Appartement Paris 15ème\",\n    \"description\": \"Appartement 3 pièces dans le 15ème arrondissement de Paris\",\n    \"type\": \"REAL_ESTATE\",\n    \"currentValue\": 450000,\n    \"currency\": \"EUR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02.3 - Create Stock Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Stock asset created successfully', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Store stock asset ID",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('stock_asset_id', responseJson.id);",
+									"    console.log('Stock asset ID saved: ' + responseJson.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Actions Apple\",\n    \"description\": \"Portefeuille d'actions Apple Inc.\",\n    \"type\": \"STOCK\",\n    \"currentValue\": 25000,\n    \"currency\": \"EUR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02.4 - Create Bank Account Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Bank account asset created successfully', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Store bank account asset ID",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('bank_account_asset_id', responseJson.id);",
+									"    console.log('Bank account asset ID saved: ' + responseJson.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Compte épargne principal\",\n    \"description\": \"Livret A + PEL\",\n    \"type\": \"BANK_ACCOUNT\",\n    \"currentValue\": 35000,\n    \"currency\": \"EUR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02.5 - Get All Assets (Should have 3)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Should have 3 assets', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.lengthOf(3);",
+									"});",
+									"",
+									"pm.test('Assets have required properties', function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.forEach(asset => {",
+									"        pm.expect(asset).to.have.property('id');",
+									"        pm.expect(asset).to.have.property('name');",
+									"        pm.expect(asset).to.have.property('type');",
+									"        pm.expect(asset).to.have.property('currentValue');",
+									"        pm.expect(asset).to.have.property('currency');",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02.6 - Get Asset by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Asset retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Asset details are correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.name).to.eql('Appartement Paris 15ème');",
+									"    pm.expect(responseJson.type).to.eql('REAL_ESTATE');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets/{{real_estate_asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets",
+								"{{real_estate_asset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02.7 - Get Assets by Type (REAL_ESTATE)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Should have 1 real estate asset', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.lengthOf(1);",
+									"    pm.expect(responseJson[0].type).to.eql('REAL_ESTATE');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets/type/REAL_ESTATE",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets",
+								"type",
+								"REAL_ESTATE"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02.8 - Update Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Asset updated successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Asset value updated correctly', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.currentValue).to.eql(470000);",
+									"    pm.expect(responseJson.name).to.include('Rénové');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Appartement Paris 15ème - Rénové\",\n    \"description\": \"Appartement 3 pièces rénové dans le 15ème arrondissement de Paris\",\n    \"type\": \"REAL_ESTATE\",\n    \"currentValue\": 470000,\n    \"currency\": \"EUR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assets/{{real_estate_asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets",
+								"{{real_estate_asset_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Tests de gestion des actifs"
+		},
+		{
+			"name": "03 - Asset Valuations",
+			"item": [
+				{
+					"name": "03.1 - Get Valuations for Asset (Initially Empty)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Initially no valuations', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.lengthOf(0);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/valuations/asset/{{real_estate_asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations",
+								"asset",
+								"{{real_estate_asset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03.2 - Create Historical Valuation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Valuation created successfully', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Valuation data is correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('id');",
+									"    pm.expect(responseJson.value).to.eql(440000);",
+									"    pm.expect(responseJson.source).to.eql('Expertise initiale');",
+									"});",
+									"",
+									"// Store valuation ID",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('historical_valuation_id', responseJson.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"assetId\": {{real_estate_asset_id}},\n    \"valuationDate\": \"2024-01-01\",\n    \"value\": 440000,\n    \"currency\": \"EUR\",\n    \"source\": \"Expertise initiale\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/valuations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03.3 - Create Current Valuation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Current valuation created successfully', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Store current valuation ID",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('current_valuation_id', responseJson.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"assetId\": {{real_estate_asset_id}},\n    \"valuationDate\": \"2025-06-01\",\n    \"value\": 480000,\n    \"currency\": \"EUR\",\n    \"source\": \"Estimation en ligne\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/valuations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03.4 - Get All Valuations for Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Should have 2 valuations', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.lengthOf(2);",
+									"});",
+									"",
+									"pm.test('Valuations have required properties', function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.forEach(valuation => {",
+									"        pm.expect(valuation).to.have.property('id');",
+									"        pm.expect(valuation).to.have.property('assetId');",
+									"        pm.expect(valuation).to.have.property('valuationDate');",
+									"        pm.expect(valuation).to.have.property('value');",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/valuations/asset/{{real_estate_asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations",
+								"asset",
+								"{{real_estate_asset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03.5 - Get Valuations by Date Range",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Should have 1 valuation in 2025', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.lengthOf(1);",
+									"    pm.expect(responseJson[0].value).to.eql(480000);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/valuations/asset/{{real_estate_asset_id}}/range?startDate=2025-01-01&endDate=2025-12-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations",
+								"asset",
+								"{{real_estate_asset_id}}",
+								"range"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2025-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03.6 - Get Valuation by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Valuation retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Valuation details are correct', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.value).to.eql(440000);",
+									"    pm.expect(responseJson.source).to.eql('Expertise initiale');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/valuations/{{historical_valuation_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations",
+								"{{historical_valuation_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Tests de gestion des valorisations"
+		},
+		{
+			"name": "04 - Portfolio Analysis",
+			"item": [
+				{
+					"name": "04.1 - Get Portfolio Summary",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Portfolio summary retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Portfolio summary contains total patrimony', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('totalPatrimony');",
+									"    pm.expect(responseJson.totalPatrimony).to.be.a('number');",
+									"    pm.expect(responseJson.totalPatrimony).to.be.greaterThan(0);",
+									"});",
+									"",
+									"pm.test('Total patrimony should be sum of all assets', function () {",
+									"    const responseJson = pm.response.json();",
+									"    // 470000 (real estate) + 25000 (stock) + 35000 (bank) = 530000",
+									"    pm.expect(responseJson.totalPatrimony).to.eql(530000);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/portfolio/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"portfolio",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04.2 - Get Portfolio Distribution",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Portfolio distribution retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Distribution contains asset types', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"    pm.expect(responseJson.length).to.be.greaterThan(0);",
+									"});",
+									"",
+									"pm.test('Each distribution item has required properties', function () {",
+									"    const responseJson = pm.response.json();",
+									"    responseJson.forEach(item => {",
+									"        pm.expect(item).to.have.property('type');",
+									"        pm.expect(item).to.have.property('label');",
+									"        pm.expect(item).to.have.property('total');",
+									"        pm.expect(item.total).to.be.a('number');",
+									"    });",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/portfolio/distribution",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"portfolio",
+								"distribution"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Tests d'analyse du portefeuille"
+		},
+		{
+			"name": "05 - Error Cases & Security",
+			"item": [
+				{
+					"name": "05.1 - Access Asset Without Token (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Request should be unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05.2 - Access Non-Existent Asset (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Asset not found', function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test('Error message is appropriate', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('non trouvé');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets/999999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets",
+								"999999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05.3 - Create Asset with Invalid Data (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Validation error', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Validation errors are returned', function () {",
+									"    const responseJson = pm.response.json();",
+									"    // Should contain validation errors for missing fields",
+									"    pm.expect(Object.keys(responseJson).length).to.be.greaterThan(0);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Asset without required fields\",\n    \"currentValue\": -1000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05.4 - Login with Wrong Credentials (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Login should fail', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Error message is appropriate', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('invalides');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{test_username}}\",\n    \"password\": \"wrong_password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Tests des cas d'erreur et de sécurité"
+		},
+		{
+			"name": "06 - Cleanup",
+			"item": [
+				{
+					"name": "06.1 - Delete Historical Valuation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Valuation deleted successfully', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/valuations/{{historical_valuation_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations",
+								"{{historical_valuation_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06.2 - Delete Current Valuation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Valuation deleted successfully', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/valuations/{{current_valuation_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"valuations",
+								"{{current_valuation_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06.3 - Delete Bank Account Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Asset deleted successfully', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets/{{bank_account_asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets",
+								"{{bank_account_asset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06.4 - Delete Stock Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Asset deleted successfully', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets/{{stock_asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets",
+								"{{stock_asset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06.5 - Delete Real Estate Asset",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Asset deleted successfully', function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets/{{real_estate_asset_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets",
+								"{{real_estate_asset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06.6 - Verify All Assets Deleted",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('All assets deleted successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.lengthOf(0);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/assets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assets"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Nettoyage des données de test"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script exécuté avant chaque requête",
+					"console.log('Executing request: ' + pm.info.requestName);",
+					"",
+					"// Générer un identifiant unique pour cette session si pas déjà fait",
+					"if (!pm.environment.get('session_id')) {",
+					"    const sessionId = Date.now();",
+					"    pm.environment.set('session_id', sessionId);",
+					"    pm.environment.set('test_username', 'testuser_' + sessionId);",
+					"    pm.environment.set('test_email', 'test' + sessionId + '@example.com');",
+					"    console.log('Session ID generated: ' + sessionId);",
+					"    console.log('Test username: ' + pm.environment.get('test_username'));",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script exécuté après chaque requête",
+					"console.log('Response status: ' + pm.response.code);",
+					"",
+					"// Log des erreurs pour debug",
+					"if (pm.response.code >= 400) {",
+					"    console.log('Error response body:', pm.response.text());",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:9999",
+			"type": "string"
+		},
+		{
+			"key": "test_username",
+			"value": "testuser_mosaique",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "test_mosaique@example.com",
+			"type": "string"
+		},
+		{
+			"key": "test_password",
+			"value": "Password123!",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "real_estate_asset_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "stock_asset_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bank_account_asset_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "historical_valuation_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "current_valuation_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

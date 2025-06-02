@@ -41,7 +41,7 @@ public class AuthService {
     private final CodeVerifier codeVerifier = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
 
     @Transactional
-    public User registerUser(SignupRequest signupRequest) {
+    public void registerUser(SignupRequest signupRequest) {
         if (userRepository.existsByUsername(signupRequest.getUsername())) {
             throw new DuplicateResourceException("Ce nom d'utilisateur est déjà utilisé");
         }
@@ -54,7 +54,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setRoles(Collections.singleton(Role.ROLE_USER));
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     @Transactional
