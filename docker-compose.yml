@@ -1,17 +1,56 @@
 # =================================================================
-# DOCKER COMPOSE - MOSAÏQUE CAPITAL (MySQL local)
+# DOCKER COMPOSE - MOSAÏQUE CAPITAL (SOLUTION COMPLÈTE)
 # =================================================================
-# Ce docker-compose utilise MySQL installé localement sur votre machine
-# et lance seulement Redis + outils de développement
+# Configuration optimisée pour lancer toute l'application avec une seule commande
+# Inclut : Spring Boot App + MySQL + Redis + Outils de développement
 
 version: '3.8'
 
 services:
   # =================================================================
+  # MYSQL - Base de données principale
+  # =================================================================
+  mysql:
+    image: mysql:8.0.34
+    container_name: mosaique-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD:-a3!4@iDSVs&fHw$B}
+      MYSQL_DATABASE: mosaique_capital
+      MYSQL_USER: mosaique_user
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD:-a3!4@iDSVs&fHw$B}
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "${DATABASE_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docs/mosaique_capital.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
+      --max-connections=100
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DATABASE_PASSWORD:-a3!4@iDSVs&fHw$B}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - mosaique-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # =================================================================
   # REDIS - Cache et blacklist des tokens JWT
   # =================================================================
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     container_name: mosaique-redis
     restart: unless-stopped
     command: >
@@ -21,11 +60,12 @@ services:
       --appendfsync everysec
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
+      --bind 0.0.0.0
+      --protected-mode no
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
-      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD:-mosaique_redis_2025}
     healthcheck:
@@ -43,7 +83,85 @@ services:
         max-file: "3"
 
   # =================================================================
-  # REDIS COMMANDER - Interface web pour Redis (optionnel)
+  # SPRING BOOT APPLICATION - API principale
+  # =================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE:-2025-01-01}
+        - VCS_REF=${VCS_REF:-dev}
+    container_name: mosaique-app
+    restart: unless-stopped
+    environment:
+      # Profil Spring
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+
+      # Base de données
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/mosaique_capital?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8&useUnicode=true
+      SPRING_DATASOURCE_USERNAME: mosaique_user
+      SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD:-a3!4@iDSVs&fHw$B}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+
+      # JPA/Hibernate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      SPRING_JPA_SHOW_SQL: ${JPA_SHOW_SQL:-false}
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+
+      # Redis
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD:-mosaique_redis_2025}
+      SPRING_REDIS_DATABASE: ${REDIS_DATABASE:-0}
+      SPRING_REDIS_TIMEOUT: 2000ms
+      SPRING_REDIS_JEDIS_POOL_MAX_ACTIVE: 8
+      SPRING_REDIS_JEDIS_POOL_MAX_IDLE: 8
+      SPRING_REDIS_JEDIS_POOL_MIN_IDLE: 0
+
+      # JWT
+      APP_JWT_SECRET: ${JWT_SECRET:-VotreSecretJWTTresSecuriseEtDifficileADeviner123456789ABCDEF}
+      APP_JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      APP_JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+
+      # MFA
+      APP_MFA_ISSUER: ${MFA_ISSUER:-MosaiqueCapital}
+
+      # Serveur
+      SERVER_PORT: ${SERVER_PORT:-9999}
+
+      # JVM
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx768m -Xms256m -XX:+UseG1GC -XX:+UseContainerSupport}
+
+      # Logging
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-INFO}
+      LOGGING_LEVEL_COM_MASTER_MOSAIQUE_CAPITAL: ${LOG_LEVEL_APP:-DEBUG}
+    ports:
+      - "${SERVER_PORT:-9999}:9999"
+    volumes:
+      - app_logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mosaique-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9999/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "15m"
+        max-file: "5"
+
+  # =================================================================
+  # REDIS COMMANDER - Interface web pour Redis (dev uniquement)
   # =================================================================
   redis-commander:
     image: rediscommander/redis-commander:latest
@@ -61,6 +179,8 @@ services:
         condition: service_healthy
     networks:
       - mosaique-network
+    profiles:
+      - dev
     logging:
       driver: "json-file"
       options:
@@ -68,7 +188,7 @@ services:
         max-file: "2"
 
   # =================================================================
-  # ADMINER - Interface web pour MySQL local (optionnel)
+  # ADMINER - Interface web pour MySQL (dev uniquement)
   # =================================================================
   adminer:
     image: adminer:4.8.1
@@ -77,16 +197,23 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ADMINER_DEFAULT_SERVER=host.docker.internal:3306
+      - ADMINER_DEFAULT_SERVER=mysql
       - ADMINER_DESIGN=pepa-linha
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - mosaique-network
-    # Pour accéder à MySQL local depuis le conteneur
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    profiles:
+      - dev
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
 
   # =================================================================
-  # MAILHOG - Serveur mail de développement (optionnel)
+  # MAILHOG - Serveur mail de développement (dev uniquement)
   # =================================================================
   mailhog:
     image: mailhog/mailhog:latest
@@ -97,6 +224,8 @@ services:
       - "8025:8025"  # Interface web
     networks:
       - mosaique-network
+    profiles:
+      - dev
     logging:
       driver: "json-file"
       options:
@@ -107,9 +236,15 @@ services:
 # VOLUMES
 # =================================================================
 volumes:
+  mysql_data:
+    driver: local
+    name: mosaique_mysql_data
   redis_data:
     driver: local
     name: mosaique_redis_data
+  app_logs:
+    driver: local
+    name: mosaique_app_logs
 
 # =================================================================
 # NETWORKS
