@@ -63,53 +63,7 @@ com.master.mosaique_capital
 - **Redis 6+** (recommandé pour la production)
 - **Maven 3.8+**
 
-### 2. Configuration des secrets 🔐
-
-#### Méthode automatique (recommandée)
-
-```bash
-# Rendre le script exécutable
-chmod +x generate-secrets.sh
-
-# Générer tous les secrets automatiquement
-./generate-secrets.sh
-```
-
-Ce script génère :
-- ✅ **Secret JWT** cryptographiquement sécurisé
-- ✅ **Mots de passe** pour base de données et Redis
-- ✅ **Clés de chiffrement** pour les données sensibles
-- ✅ **Fichier .env** complet
-- ✅ **Docker Compose** pour développement
-
-#### Méthode manuelle
-
-```bash
-# 1. Copier le fichier d'exemple
-cp .env.example .env
-
-# 2. Générer un secret JWT sécurisé
-openssl rand -base64 32
-
-# 3. Éditer le fichier .env avec vos valeurs
-nano .env
-```
-
-### 3. Configuration de la base de données
-
-```bash
-# Démarrer MySQL et Redis avec Docker
-docker-compose -f docker-compose.dev.yml up -d
-
-# Ou configurer manuellement :
-# Créer la base de données
-mysql -u root -p -e "CREATE DATABASE mosaique_capital CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-
-# Exécuter le script SQL d'initialisation
-mysql -u root -p mosaique_capital < docs/mosaique_capital.sql
-```
-
-### 4. Variables d'environnement essentielles
+### 2. Variables d'environnement essentielles
 
 | Variable | Description | Exemple |
 |----------|-------------|---------|
@@ -118,7 +72,7 @@ mysql -u root -p mosaique_capital < docs/mosaique_capital.sql
 | `REDIS_PASSWORD` | 🔴 Mot de passe Redis | `RedisPassword123!` |
 | `SPRING_PROFILES_ACTIVE` | 🎯 Profil Spring actif | `dev` / `prod` |
 
-### 5. Compilation et exécution
+### 3. Compilation et exécution
 
 ```bash
 # Compilation
@@ -185,53 +139,6 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 | `/api/portfolio/summary` | GET | Résumé du patrimoine |
 | `/api/portfolio/distribution` | GET | Répartition par catégorie |
 
-## 🧪 Tests et exemples
-
-### Configuration MFA complète
-
-```bash
-# 1. Créer un compte
-curl -X POST "http://localhost:9999/api/auth/signup" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "TestPassword123!"
-  }'
-
-# 2. Se connecter
-curl -X POST "http://localhost:9999/api/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "password": "TestPassword123!"
-  }'
-
-# 3. Configurer MFA (token requis)
-curl -X POST "http://localhost:9999/api/mfa/setup" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-
-# 4. Télécharger le QR code
-curl -X GET "http://localhost:9999/api/mfa/qrcode" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  --output qr-code.png
-
-# 5. Activer MFA (après scan du QR code)
-curl -X POST "http://localhost:9999/api/mfa/verify" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"code": "123456"}'
-
-# 6. Se connecter avec MFA
-curl -X POST "http://localhost:9999/api/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "password": "TestPassword123!",
-    "mfaCode": "789012"
-  }'
-```
-
 ### Tests avec collection Postman
 
 Une collection Postman complète est disponible dans `docs/Mosaïque Capital API - Tests Complets.postman_collection.json` avec :
@@ -252,19 +159,6 @@ Une collection Postman complète est disponible dans `docs/Mosaïque Capital API
 - 📝 **Logs d'audit** détaillés
 - 🔄 **Rotation automatique** des tokens
 
-### Configuration de production
-
-```properties
-# Variables essentielles pour la production
-SPRING_PROFILES_ACTIVE=prod
-JWT_SECRET=VotreSecretProductionTresLong256Bits...
-DATABASE_PASSWORD=MotDePasseComplexeProd
-REDIS_PASSWORD=RedisPasswordComplexeProd
-SSL_ENABLED=true
-COOKIE_SECURE=true
-LOG_LEVEL_ROOT=WARN
-```
-
 ### Checklist de déploiement
 
 - [ ] ✅ **Secrets générés** avec `generate-secrets.sh`
@@ -274,44 +168,6 @@ LOG_LEVEL_ROOT=WARN
 - [ ] ✅ **Logs** configurés et monitored
 - [ ] ✅ **Backup** base de données planifié
 - [ ] ✅ **Monitoring** (Actuator + Prometheus)
-
-## 🐳 Déploiement Docker
-
-### Développement
-
-```bash
-# Démarrer l'environnement complet
-docker-compose -f docker-compose.dev.yml up -d
-
-# Vérifier les services
-docker-compose -f docker-compose.dev.yml ps
-```
-
-### Production (exemple)
-
-```yaml
-# docker-compose.prod.yml
-version: '3.8'
-services:
-  app:
-    build: .
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      JWT_SECRET_FILE: /run/secrets/jwt_secret
-      DATABASE_PASSWORD_FILE: /run/secrets/db_password
-    secrets:
-      - jwt_secret
-      - db_password
-    depends_on:
-      - mysql
-      - redis
-
-secrets:
-  jwt_secret:
-    external: true
-  db_password:
-    external: true
-```
 
 ## 📊 Monitoring et observabilité
 
