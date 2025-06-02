@@ -1,10 +1,9 @@
 # =================================================================
-# DOCKERFILE OPTIMISÉ - MOSAÏQUE CAPITAL SPRING BOOT
+# DOCKERFILE CORRIGÉ - MOSAÏQUE CAPITAL SPRING BOOT
 # =================================================================
-# Multi-stage build optimisé pour la production avec cache layers
 
 # =================================================================
-# STAGE 1: BUILD - Compilation avec cache Maven optimisé
+# STAGE 1: BUILD - Compilation SANS variables d'environnement
 # =================================================================
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
@@ -12,7 +11,7 @@ FROM maven:3.9.6-eclipse-temurin-21 AS builder
 LABEL stage=builder
 LABEL maintainer="Mosaique Capital Team"
 
-# Variables d'environnement pour Maven
+# Variables d'environnement pour Maven SEULEMENT
 ENV MAVEN_OPTS="-Dmaven.repo.local=/root/.m2/repository -Xmx2048m -XX:+UseG1GC"
 
 # Répertoire de travail
@@ -33,10 +32,11 @@ RUN ./mvnw dependency:go-offline -B
 # Copier le code source
 COPY src ./src
 
-# Compilation et packaging avec optimisations
+# Compilation et packaging SANS filtrage des propriétés
 RUN ./mvnw clean package -DskipTests -B -q \
     -Dmaven.javadoc.skip=true \
-    -Dmaven.source.skip=true
+    -Dmaven.source.skip=true \
+    -Dmaven.resources.skip=false
 
 # Vérifier que le JAR a été créé et le renommer
 RUN mv target/Mosaique_Capital-*.jar target/app.jar && \

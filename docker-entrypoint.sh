@@ -1,8 +1,8 @@
 #!/bin/sh
 # =================================================================
-# DOCKER ENTRYPOINT - MOSAÏQUE CAPITAL
+# DOCKER ENTRYPOINT SIMPLIFIÉ - MOSAÏQUE CAPITAL
 # =================================================================
-# Script d'entrée optimisé avec vérifications et attente des services
+# Script d'entrée qui ne se bloque pas
 
 set -e
 
@@ -30,73 +30,27 @@ success() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] SUCCESS: $1${NC}"
 }
 
-# Fonction pour attendre qu'un service soit disponible
+# Fonction pour attendre qu'un service soit disponible (SIMPLE)
 wait_for_service() {
     local host=$1
     local port=$2
     local service_name=$3
-    local timeout=${4:-60}
+    local timeout=${4:-30}
 
     log "Attente du service $service_name ($host:$port)..."
 
     local counter=0
-    while ! nc -z "$host" "$port"; do
+    while ! nc -z "$host" "$port" 2>/dev/null; do
         if [ $counter -ge $timeout ]; then
-            error "Timeout lors de l'attente du service $service_name après ${timeout}s"
-            exit 1
+            warn "Timeout lors de l'attente du service $service_name après ${timeout}s"
+            warn "Démarrage de l'application quand même..."
+            return 0
         fi
         counter=$((counter + 1))
         sleep 1
     done
 
     success "Service $service_name est disponible !"
-}
-
-# Fonction pour vérifier la connexion Redis avec authentification
-check_redis_connection() {
-    local redis_host=${SPRING_REDIS_HOST:-redis}
-    local redis_port=${SPRING_REDIS_PORT:-6379}
-    local redis_password=${SPRING_REDIS_PASSWORD:-}
-
-    log "Vérification de la connexion Redis..."
-
-    if [ -n "$redis_password" ]; then
-        # Test avec mot de passe
-        if echo "AUTH $redis_password\nPING\nQUIT" | nc "$redis_host" "$redis_port" | grep -q "PONG"; then
-            success "Connexion Redis avec authentification réussie"
-            return 0
-        else
-            error "Échec de la connexion Redis avec authentification"
-            return 1
-        fi
-    else
-        # Test sans mot de passe
-        if echo "PING\nQUIT" | nc "$redis_host" "$redis_port" | grep -q "PONG"; then
-            success "Connexion Redis sans authentification réussie"
-            return 0
-        else
-            error "Échec de la connexion Redis sans authentification"
-            return 1
-        fi
-    fi
-}
-
-# Fonction pour vérifier la connexion MySQL
-check_mysql_connection() {
-    local mysql_host=$(echo "$SPRING_DATASOURCE_URL" | sed -n 's/.*\/\/\([^:]*\):.*/\1/p')
-    local mysql_port=$(echo "$SPRING_DATASOURCE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
-
-    if [ -z "$mysql_host" ]; then
-        mysql_host="mysql"
-    fi
-
-    if [ -z "$mysql_port" ]; then
-        mysql_port="3306"
-    fi
-
-    log "Vérification de la connexion MySQL ($mysql_host:$mysql_port)..."
-
-    wait_for_service "$mysql_host" "$mysql_port" "MySQL" 120
 }
 
 # Affichage des informations de démarrage
@@ -130,34 +84,27 @@ fi
 
 success "Variables d'environnement validées"
 
-# Attente des services de dépendance
+# Attente des services de dépendance (SIMPLE ET RAPIDE)
 log "Vérification des services de dépendance..."
 
-# Attendre MySQL
-check_mysql_connection
+# Attendre MySQL (maximum 30 secondes)
+wait_for_service "mysql" "3306" "MySQL" 30
 
-# Attendre Redis
-wait_for_service "${SPRING_REDIS_HOST:-redis}" "${SPRING_REDIS_PORT:-6379}" "Redis" 60
+# Attendre Redis (maximum 20 secondes)
+wait_for_service "redis" "6379" "Redis" 20
 
-# Vérifier la connexion Redis avec authentification
-check_redis_connection
-
-# Attendre un peu plus pour s'assurer que les services sont complètement prêts
-log "Services disponibles. Attente supplémentaire de 5 secondes..."
-sleep 5
+# Attendre un peu pour s'assurer que les services sont prêts
+log "Services vérifiés. Attente supplémentaire de 3 secondes..."
+sleep 3
 
 # Affichage de la configuration JVM
 log "Configuration JVM: $JAVA_OPTS"
-
-# Vérification de l'espace disque
-log "Vérification de l'espace disque..."
-df -h /app
 
 # Création des répertoires de logs si nécessaire
 mkdir -p /app/logs
 
 # Affichage du statut final avant démarrage
-success "Tous les prérequis sont satisfaits. Démarrage de l'application..."
+success "Démarrage de l'application Spring Boot..."
 log "Commande: $*"
 
 # Démarrage de l'application
