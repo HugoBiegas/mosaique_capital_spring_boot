@@ -38,9 +38,34 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // ===== ENDPOINTS PUBLICS =====
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+
+                        // ===== WEBHOOKS BANCAIRES (publics mais sécurisés par signature) =====
+                        .requestMatchers("/api/banking/webhooks/**").permitAll()
+
+                        // ===== ENDPOINTS BANKING (authentifiés) =====
+                        .requestMatchers("/api/banking/providers").hasRole("USER")
+                        .requestMatchers("/api/banking/connections/**").hasRole("USER")
+                        .requestMatchers("/api/banking/accounts/**").hasRole("USER")
+                        .requestMatchers("/api/banking/transactions/**").hasRole("USER")
+                        .requestMatchers("/api/banking/summary").hasRole("USER")
+                        .requestMatchers("/api/banking/status").hasRole("USER")
+
+                        // ===== ENDPOINTS ASSETS (authentifiés) =====
+                        .requestMatchers("/api/assets/**").hasRole("USER")
+                        .requestMatchers("/api/valuations/**").hasRole("USER")
+                        .requestMatchers("/api/portfolio/**").hasRole("USER")
+
+                        // ===== ENDPOINTS MFA (authentifiés) =====
+                        .requestMatchers("/api/mfa/**").hasRole("USER")
+
+                        // ===== ADMIN ENDPOINTS (réservés aux admins) =====
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // ===== TOUS LES AUTRES ENDPOINTS =====
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -65,7 +90,7 @@ public class SecurityConfig {
                 "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"
         ));
 
-        // ✅ Headers autorisés
+        // ✅ Headers autorisés (ajout des headers bancaires)
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -74,7 +99,10 @@ public class SecurityConfig {
                 "Access-Control-Request-Method",
                 "Access-Control-Request-Headers",
                 "X-Requested-With",
-                "Cache-Control"
+                "Cache-Control",
+                "X-Webhook-Signature",         // Pour Budget Insight
+                "X-Linxo-Signature",          // Pour Linxo
+                "X-Banking-Provider"          // Header custom pour identifier le provider
         ));
 
         // ✅ Headers exposés au client
@@ -82,7 +110,9 @@ public class SecurityConfig {
                 "Authorization",
                 "Content-Disposition",
                 "Content-Length",
-                "X-Total-Count"
+                "X-Total-Count",
+                "X-Sync-Status",              // Pour le statut de synchronisation
+                "X-Last-Sync"                 // Pour la date de dernière sync
         ));
 
         // ✅ Autoriser les credentials (cookies, tokens)
