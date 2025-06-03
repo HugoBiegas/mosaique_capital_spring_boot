@@ -10,7 +10,6 @@ import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
-import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
-import java.util.Objects;
 
 /**
  * Configuration Resilience4j pour les services bancaires
@@ -28,13 +26,13 @@ import java.util.Objects;
 @Slf4j
 public class BankingResilienceConfig {
 
-    @Value("${banking.circuit-breaker.enabled:true}")
+    @Value("${app.banking.circuit-breaker.enabled:true}")
     private boolean circuitBreakerEnabled;
 
-    @Value("${banking.retry.enabled:true}")
+    @Value("${app.banking.retry.enabled:true}")
     private boolean retryEnabled;
 
-    @Value("${banking.rate-limiter.enabled:true}")
+    @Value("${app.banking.rate-limiter.enabled:true}")
     private boolean rateLimiterEnabled;
 
     /**
@@ -84,25 +82,32 @@ public class BankingResilienceConfig {
 
     /**
      * Configuration du Retry avec backoff exponentiel
-     * Stratégie adaptée aux timeouts temporaires des APIs bancaires
+     * ✅ CORRECTION : Utilisation uniquement d'intervalFunction (pas de waitDuration)
      */
     @Bean
     public RetryRegistry retryRegistry() {
         RetryConfig config = RetryConfig.custom()
                 // 3 tentatives maximum
                 .maxAttempts(3)
-                // Délai initial de 1 seconde
-                .waitDuration(Duration.ofSeconds(1))
-                // Backoff exponentiel avec multiplicateur 2 (retourne long en millisecondes)
-                .intervalFunction(attempt -> 1000L * (long) Math.pow(2, attempt - 1))
+                .intervalFunction(attempt -> {
+                    // Délai initial de 1 seconde, puis exponentiel (1s, 2s, 4s)
+                    long delayMs = 1000L * (long) Math.pow(2, attempt - 1);
+                    log.debug("Retry attempt {}: délai = {}ms", attempt, delayMs);
+                    return delayMs;
+                })
                 // Exceptions déclenchant un retry
-                .retryOnException(throwable ->
-                        throwable instanceof org.springframework.web.client.ResourceAccessException ||
-                                throwable instanceof java.net.SocketTimeoutException ||
-                                throwable instanceof org.springframework.web.client.HttpServerErrorException ||
-                                (throwable instanceof com.master.mosaique_capital.exception.BankConnectionException &&
-                                        throwable.getMessage().contains("timeout"))
-                )
+                .retryOnException(throwable -> {
+                    if (throwable instanceof org.springframework.web.client.ResourceAccessException ||
+                            throwable instanceof java.net.SocketTimeoutException ||
+                            throwable instanceof org.springframework.web.client.HttpServerErrorException) {
+                        return true;
+                    }
+                    if (throwable instanceof com.master.mosaique_capital.exception.BankConnectionException &&
+                            throwable.getMessage().contains("timeout")) {
+                        return true;
+                    }
+                    return false;
+                })
                 // Exceptions à ne pas retry
                 .ignoreExceptions(
                         org.springframework.web.client.HttpClientErrorException.Unauthorized.class,
@@ -112,8 +117,8 @@ public class BankingResilienceConfig {
 
         RetryRegistry registry = RetryRegistry.of(config);
 
-        log.info("✅ Retry banking configuré: maxAttempts={}, initialDelay={}ms",
-                config.getMaxAttempts(), Objects.requireNonNull(config.getIntervalFunction()).apply(1));
+        log.info("✅ Retry banking configuré: maxAttempts={}, backoff=exponentiel",
+                config.getMaxAttempts());
 
         return registry;
     }
@@ -256,10 +261,5 @@ public class BankingResilienceConfig {
     @Bean("bankingRateLimiter")
     public RateLimiter bankingRateLimiter(RateLimiterRegistry registry) {
         return registry.rateLimiter("banking");
-    }
-
-    @Bean("bankingTimeLimiter")
-    public TimeLimiter bankingTimeLimiter(TimeLimiterConfig config) {
-        return TimeLimiter.of("banking", config);
     }
 }

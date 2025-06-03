@@ -1585,8 +1585,10 @@
 									}
 								],
 								"url": {
-									"raw": "{{base_url}}/api/banking/providers",
-									"host": ["{{base_url}}"],
+									"raw": "http://localhost:9999/api/banking/providers",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
 									"path": ["api", "banking", "providers"]
 								}
 							}
@@ -1621,8 +1623,10 @@
 									}
 								],
 								"url": {
-									"raw": "{{base_url}}/api/banking/providers",
-									"host": ["{{base_url}}"],
+									"raw": "http://localhost:9999/api/banking/providers",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
 									"path": ["api", "banking", "providers"]
 								}
 							}
@@ -1651,6 +1655,7 @@
 													"    const response = pm.response.json();",
 													"    pm.globals.set('mock_connection_id', response.id);",
 													"    pm.globals.set('active_connection_id', response.id);",
+													"    pm.globals.set('latest_connection_id', response.id);",
 													"    console.log('🔗 Mock connection created with ID:', response.id);",
 													"    console.log('📊 Status:', response.connectionStatus);",
 													"}"
@@ -1675,8 +1680,10 @@
 											"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"demo_user_mock\",\n        \"password\": \"mock_secure_password_123\",\n        \"additionalField1\": \"optional_field\"\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
@@ -1692,7 +1699,11 @@
 													"    pm.response.to.have.status(200);",
 													"    const response = pm.response.json();",
 													"    pm.expect(response.connectionStatus).to.eql('ACTIVE');",
-													"});"
+													"});",
+													"",
+													"if (pm.response.code === 200) {",
+													"    console.log('✅ Mock connection confirmed and activated');",
+													"}"
 												]
 											}
 										}
@@ -1714,8 +1725,10 @@
 											"raw": "{\n    \"confirmationCode\": \"123456\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{mock_connection_id}}/confirm",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{mock_connection_id}}/confirm",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{mock_connection_id}}", "confirm"]
 										}
 									}
@@ -1739,6 +1752,7 @@
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
 													"    pm.globals.set('bi_connection_id', response.id);",
+													"    pm.globals.set('latest_connection_id', response.id);",
 													"    console.log('🏛️ Budget Insight connection:', response.connectionId);",
 													"}"
 												]
@@ -1762,14 +1776,30 @@
 											"raw": "{\n    \"provider\": \"budget-insight\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@creditagricole.fr\",\n        \"password\": \"Demo_CA_Password_123!\",\n        \"additionalField1\": \"123456\",\n        \"extraFields\": {\n            \"birthdate\": \"1985-06-15\",\n            \"phone\": \"0601234567\"\n        }\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
 								},
 								{
 									"name": "Initiate Budget Insight - BNP Paribas",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('bi_bnp_connection_id', response.id);",
+													"    console.log('🏛️ Budget Insight BNP connection:', response.connectionId);",
+													"}"
+												]
+											}
+										}
+									],
 									"request": {
 										"method": "POST",
 										"header": [
@@ -1787,8 +1817,10 @@
 											"raw": "{\n    \"provider\": \"budget-insight\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@bnpparibas.net\",\n        \"password\": \"Demo_BNP_Password_123!\",\n        \"additionalField1\": \"987654\",\n        \"extraFields\": {\n            \"customerNumber\": \"12345678\"\n        }\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
@@ -1812,8 +1844,10 @@
 											"raw": "{\n    \"confirmationCode\": \"987654\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{bi_connection_id}}/confirm",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{bi_connection_id}}/confirm",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{bi_connection_id}}", "confirm"]
 										}
 									}
@@ -1833,6 +1867,7 @@
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
 													"    pm.globals.set('bridge_connection_id', response.id);",
+													"    pm.globals.set('latest_connection_id', response.id);",
 													"    console.log('🌉 Bridge API connection:', response.connectionId);",
 													"}"
 												]
@@ -1856,8 +1891,10 @@
 											"raw": "{\n    \"provider\": \"bridge-api\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@societegenerale.fr\",\n        \"password\": \"Demo_SG_Password_123!\"\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
@@ -1881,8 +1918,10 @@
 											"raw": "{\n    \"provider\": \"bridge-api\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@lcl.fr\",\n        \"password\": \"Demo_LCL_Password_123!\"\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
@@ -1906,8 +1945,10 @@
 											"raw": "{\n    \"confirmationCode\": \"456789\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{bridge_connection_id}}/confirm",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{bridge_connection_id}}/confirm",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{bridge_connection_id}}", "confirm"]
 										}
 									}
@@ -1927,6 +1968,7 @@
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
 													"    pm.globals.set('linxo_connection_id', response.id);",
+													"    pm.globals.set('latest_connection_id', response.id);",
 													"    console.log('🏦 Linxo connection:', response.connectionId);",
 													"}"
 												]
@@ -1950,8 +1992,10 @@
 											"raw": "{\n    \"provider\": \"linxo-connect\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@creditmutuel.fr\",\n        \"password\": \"Demo_CM_Password_123!\"\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
@@ -1975,8 +2019,10 @@
 											"raw": "{\n    \"confirmationCode\": \"789123\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{linxo_connection_id}}/confirm",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{linxo_connection_id}}/confirm",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{linxo_connection_id}}", "confirm"]
 										}
 									}
@@ -2008,6 +2054,12 @@
 													"        console.log('🔗 Active connection found:', activeConnection.id);",
 													"    }",
 													"    ",
+													"    // Store the first connection if no active one",
+													"    if (!activeConnection && connections.length > 0) {",
+													"        pm.globals.set('active_connection_id', connections[0].id);",
+													"        console.log('🔗 Using first connection:', connections[0].id);",
+													"    }",
+													"    ",
 													"    // Log connection summary",
 													"    const summary = connections.reduce((acc, conn) => {",
 													"        acc[conn.connectionStatus] = (acc[conn.connectionStatus] || 0) + 1;",
@@ -2028,8 +2080,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
@@ -2045,8 +2099,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{active_connection_id}}",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{active_connection_id}}"]
 										}
 									}
@@ -2081,8 +2137,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}/health",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{active_connection_id}}/health",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{active_connection_id}}", "health"]
 										}
 									}
@@ -2150,8 +2208,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/accounts",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/accounts",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "accounts"]
 										}
 									}
@@ -2187,8 +2247,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}/accounts",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{active_connection_id}}/accounts",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{active_connection_id}}", "accounts"]
 										}
 									}
@@ -2227,8 +2289,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/accounts/{{primary_account_id}}",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/accounts/{{primary_account_id}}",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "accounts", "{{primary_account_id}}"]
 										}
 									}
@@ -2288,8 +2352,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/summary",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/summary",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "summary"]
 										}
 									}
@@ -2344,8 +2410,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}/sync",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{active_connection_id}}/sync",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{active_connection_id}}", "sync"]
 										}
 									}
@@ -2393,8 +2461,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/sync-all",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/sync-all",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "sync-all"]
 										}
 									}
@@ -2461,8 +2531,10 @@
 											"raw": "{\n    \"page\": 0,\n    \"size\": 50,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/search",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/search",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "search"]
 										}
 									}
@@ -2486,8 +2558,10 @@
 											"raw": "{\n    \"page\": 0,\n    \"size\": 25,\n    \"sortBy\": \"amount\",\n    \"sortDirection\": \"ASC\",\n    \"type\": \"DEBIT\",\n    \"minAmount\": -10000,\n    \"maxAmount\": -100,\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/search",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/search",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "search"]
 										}
 									}
@@ -2511,8 +2585,10 @@
 											"raw": "{\n    \"page\": 0,\n    \"size\": 30,\n    \"category\": \"alimentation\",\n    \"type\": \"DEBIT\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\",\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/search",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/search",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "search"]
 										}
 									}
@@ -2536,8 +2612,10 @@
 											"raw": "{\n    \"page\": 0,\n    \"size\": 20,\n    \"description\": \"CARTE\",\n    \"startDate\": \"2024-06-01\",\n    \"endDate\": \"2024-06-30\",\n    \"sortBy\": \"amount\",\n    \"sortDirection\": \"ASC\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/search",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/search",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "search"]
 										}
 									}
@@ -2586,8 +2664,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/accounts/{{primary_account_id}}/transactions?page=0&size=50&sortBy=transactionDate&sortDir=DESC",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/accounts/{{primary_account_id}}/transactions?page=0&size=50&sortBy=transactionDate&sortDir=DESC",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "accounts", "{{primary_account_id}}", "transactions"],
 											"query": [
 												{
@@ -2621,8 +2701,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/accounts/{{checking_account_id}}/transactions?page=0&size=30&sortBy=transactionDate&sortDir=DESC",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/accounts/{{checking_account_id}}/transactions?page=0&size=30&sortBy=transactionDate&sortDir=DESC",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "accounts", "{{checking_account_id}}", "transactions"],
 											"query": [
 												{
@@ -2687,8 +2769,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/{{sample_transaction_id}}",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/{{sample_transaction_id}}",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}"]
 										}
 									}
@@ -2728,8 +2812,10 @@
 											"raw": "{\n    \"category\": \"alimentation\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/{{sample_transaction_id}}/category",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/{{sample_transaction_id}}/category",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}", "category"]
 										}
 									}
@@ -2753,8 +2839,10 @@
 											"raw": "{\n    \"category\": \"transport\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/{{sample_transaction_id}}/category",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/{{sample_transaction_id}}/category",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}", "category"]
 										}
 									}
@@ -2807,8 +2895,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/statistics/categories?startDate=2024-01-01&endDate=2024-12-31",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/statistics/categories?startDate=2024-01-01&endDate=2024-12-31",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "statistics", "categories"],
 											"query": [
 												{
@@ -2834,8 +2924,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/statistics/categories?startDate=2024-03-01&endDate=2024-06-01",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/statistics/categories?startDate=2024-03-01&endDate=2024-06-01",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "statistics", "categories"],
 											"query": [
 												{
@@ -2908,8 +3000,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/statistics/cash-flow?startDate=2024-01-01&endDate=2024-12-31",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/statistics/cash-flow?startDate=2024-01-01&endDate=2024-12-31",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "statistics", "cash-flow"],
 											"query": [
 												{
@@ -2935,8 +3029,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/statistics/cash-flow?startDate=2024-05-01&endDate=2024-05-31",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/statistics/cash-flow?startDate=2024-05-01&endDate=2024-05-31",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "statistics", "cash-flow"],
 											"query": [
 												{
@@ -2990,8 +3086,10 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/api/banking/webhooks/health",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/webhooks/health",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "webhooks", "health"]
 										}
 									}
@@ -3036,8 +3134,10 @@
 											"raw": "{\n    \"type\": \"connection.synced\",\n    \"connection_id\": \"bi_test_connection_123456\",\n    \"timestamp\": \"2024-06-03T14:30:00Z\",\n    \"data\": {\n        \"accounts_synced\": 3,\n        \"transactions_synced\": 157,\n        \"sync_duration_ms\": 2340,\n        \"status\": \"success\"\n    },\n    \"metadata\": {\n        \"provider\": \"budget-insight\",\n        \"user_id\": \"temp_user_789\"\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/webhooks/budget-insight",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/webhooks/budget-insight",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "webhooks", "budget-insight"]
 										}
 									}
@@ -3064,37 +3164,11 @@
 											"raw": "{\n    \"type\": \"connection.error\",\n    \"connection_id\": \"bi_test_connection_error_456\",\n    \"timestamp\": \"2024-06-03T14:35:00Z\",\n    \"error\": {\n        \"code\": \"AUTHENTICATION_FAILED\",\n        \"message\": \"Invalid credentials provided\",\n        \"retry_possible\": true\n    },\n    \"metadata\": {\n        \"provider\": \"budget-insight\",\n        \"bank_name\": \"Crédit Agricole\",\n        \"attempt_count\": 3\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/webhooks/budget-insight",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/webhooks/budget-insight",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "webhooks", "budget-insight"]
-										}
-									}
-								},
-								{
-									"name": "Test Bridge API Webhook - Account Updated",
-									"request": {
-										"auth": {
-											"type": "noauth"
-										},
-										"method": "POST",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											},
-											{
-												"key": "X-Bridge-Signature",
-												"value": "sha256=test_signature_bridge_api"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"type\": \"account.updated\",\n    \"item_id\": \"bridge_item_789123\",\n    \"account_id\": \"bridge_account_456789\",\n    \"timestamp\": \"2024-06-03T14:40:00Z\",\n    \"changes\": {\n        \"balance\": {\n            \"old_value\": 245075,\n            \"new_value\": 243521,\n            \"currency\": \"EUR\"\n        },\n        \"last_transaction_date\": \"2024-06-03\"\n    },\n    \"metadata\": {\n        \"provider\": \"bridge-api\",\n        \"bank_name\": \"Société Générale\",\n        \"account_type\": \"checking\"\n    }\n}"
-										},
-										"url": {
-											"raw": "{{base_url}}/api/banking/webhooks/bridge-api",
-											"host": ["{{base_url}}"],
-											"path": ["api", "banking", "webhooks", "bridge-api"]
 										}
 									}
 								},
@@ -3120,8 +3194,10 @@
 											"raw": "{\n    \"event\": \"transaction.created\",\n    \"connection_id\": \"linxo_connection_987654\",\n    \"account_id\": \"linxo_account_123789\",\n    \"transaction\": {\n        \"id\": \"linxo_tx_456123789\",\n        \"amount\": -4567,\n        \"description\": \"ACHAT CARTE CARREFOUR MARKET\",\n        \"date\": \"2024-06-03\",\n        \"category\": \"alimentation\",\n        \"type\": \"debit\"\n    },\n    \"timestamp\": \"2024-06-03T14:45:00Z\",\n    \"metadata\": {\n        \"provider\": \"linxo-connect\",\n        \"bank_name\": \"Crédit Mutuel\"\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/webhooks/linxo",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/webhooks/linxo",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "webhooks", "linxo"]
 										}
 									}
@@ -3183,8 +3259,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/status",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/status",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "status"]
 										}
 									}
@@ -3226,8 +3304,10 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/actuator/health",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/actuator/health",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["actuator", "health"]
 										}
 									}
@@ -3282,8 +3362,10 @@
 											"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"test_e2e@mosaique.com\",\n        \"password\": \"E2E_Test_Password_123!\"\n    }\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections"]
 										}
 									}
@@ -3321,8 +3403,10 @@
 											"raw": "{\n    \"confirmationCode\": \"E2E123\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{test_connection_id}}/confirm",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{test_connection_id}}/confirm",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{test_connection_id}}", "confirm"]
 										}
 									}
@@ -3355,8 +3439,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{test_connection_id}}/sync",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{test_connection_id}}/sync",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{test_connection_id}}", "sync"]
 										}
 									}
@@ -3392,8 +3478,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/connections/{{test_connection_id}}/accounts",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/connections/{{test_connection_id}}/accounts",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "connections", "{{test_connection_id}}", "accounts"]
 										}
 									}
@@ -3434,8 +3522,10 @@
 											"raw": "{\n    \"accountId\": {{test_account_id}},\n    \"page\": 0,\n    \"size\": 10,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/search",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/search",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "search"]
 										}
 									}
@@ -3474,8 +3564,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/summary",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/summary",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "summary"]
 										}
 									}
@@ -3519,8 +3611,10 @@
 											}
 										],
 										"url": {
-											"raw": "{{base_url}}/api/banking/providers",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/providers",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "providers"]
 										}
 									}
@@ -3559,8 +3653,10 @@
 											"raw": "{\n    \"page\": 0,\n    \"size\": 500,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\",\n    \"startDate\": \"2023-01-01\",\n    \"endDate\": \"2024-12-31\"\n}"
 										},
 										"url": {
-											"raw": "{{base_url}}/api/banking/transactions/search",
-											"host": ["{{base_url}}"],
+											"raw": "http://localhost:9999/api/banking/transactions/search",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
 											"path": ["api", "banking", "transactions", "search"]
 										}
 									}

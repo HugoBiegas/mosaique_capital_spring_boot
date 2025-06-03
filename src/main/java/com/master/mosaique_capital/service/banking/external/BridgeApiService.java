@@ -1,4 +1,4 @@
-// com/master/mosaique_capital/service/banking/external/BridgeApiService.java
+// src/main/java/com/master/mosaique_capital/service/banking/external/BridgeApiService.java
 package com.master.mosaique_capital.service.banking.external;
 
 import com.master.mosaique_capital.dto.banking.BankConnectionRequest;
@@ -35,19 +35,20 @@ public class BridgeApiService {
     // Cache pour les tokens d'accès Bridge
     private final Map<String, TokenInfo> tokenCache = new ConcurrentHashMap<>();
 
-    @Value("${banking.bridge.api-url:https://api.bridgeapi.io/v2}")
+    // ✅ CORRECTION : Ajout de valeurs par défaut pour éviter les erreurs de démarrage
+    @Value("${app.banking.bridge.api-url:https://api.bridgeapi.io/v2}")
     private String apiUrl;
 
-    @Value("${banking.bridge.client-id}")
+    @Value("${app.banking.bridge.client-id:demo_bridge_client}")
     private String clientId;
 
-    @Value("${banking.bridge.client-secret}")
+    @Value("${app.banking.bridge.client-secret:demo_bridge_secret}")
     private String clientSecret;
 
-    @Value("${banking.bridge.enabled:false}")
+    @Value("${app.banking.bridge.enabled:false}")
     private boolean enabled;
 
-    @Value("${banking.bridge.sandbox:true}")
+    @Value("${app.banking.bridge.sandbox:true}")
     private boolean sandboxMode;
 
     /**
@@ -627,12 +628,12 @@ public class BridgeApiService {
     }
 
     /**
-         * Classe interne pour le cache des tokens
-         */
-        private record TokenInfo(@Getter String token, long expiryTime) {
+     * Classe interne pour le cache des tokens
+     */
+    private record TokenInfo(@Getter String token, long expiryTime) {
 
         public boolean isExpired() {
-                return System.currentTimeMillis() >= expiryTime;
-            }
+            return System.currentTimeMillis() >= expiryTime;
         }
+    }
 }

@@ -5,6 +5,7 @@ import com.master.mosaique_capital.dto.banking.BankConnectionRequest;
 import com.master.mosaique_capital.dto.banking.external.ExternalAccountDto;
 import com.master.mosaique_capital.dto.banking.external.ExternalTransactionDto;
 import com.master.mosaique_capital.exception.BankConnectionException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,16 +34,17 @@ public class BudgetInsightService {
     // Cache pour les tokens d'accès
     private final Map<String, TokenInfo> tokenCache = new ConcurrentHashMap<>();
 
+    // ✅ CORRECTION : Ajout de valeurs par défaut pour éviter les erreurs de démarrage
     @Value("${app.banking.budget-insight.api-url:https://demo.biapi.pro/2.0}")
     private String apiUrl;
 
-    @Value("${app.banking.budget-insight.client-id}")
+    @Value("${app.banking.budget-insight.client-id:demo_client_id}")
     private String clientId;
 
-    @Value("${app.banking.budget-insight.client-secret}")
+    @Value("${app.banking.budget-insight.client-secret:demo_client_secret}")
     private String clientSecret;
 
-    @Value("${app.banking.budget-insight.enabled:true}")
+    @Value("${app.banking.budget-insight.enabled:false}")
     private boolean enabled;
 
     @Value("${app.banking.budget-insight.sandbox:true}")
@@ -668,16 +670,13 @@ public class BudgetInsightService {
      * Classe interne pour le cache des tokens
      */
     private static class TokenInfo {
+        @Getter
         private final String token;
         private final long expiryTime;
 
         public TokenInfo(String token, long expiryTime) {
             this.token = token;
             this.expiryTime = expiryTime;
-        }
-
-        public String getToken() {
-            return token;
         }
 
         public boolean isExpired() {
