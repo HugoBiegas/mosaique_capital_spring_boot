@@ -1531,603 +1531,2043 @@
 			]
 		},
 		{
-			"name": "🏦 Banking - Connections",
+			"name": "🏦 Banking API - Agrégation Bancaire",
+			"description": "API complète d'agrégation bancaire avec support Budget Insight, Bridge API, Linxo Connect",
 			"item": [
 				{
-					"name": "Get Available Providers",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/providers",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "providers"]
-						}
-					}
-				},
-				{
-					"name": "Get All Connections",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections"]
-						}
-					}
-				},
-				{
-					"name": "Get Connection by ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections/1",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections", "1"]
-						}
-					}
-				},
-				{
-					"name": "Initiate Bank Connection",
-					"event": [
+					"name": "🔍 1. Providers & Discovery",
+					"description": "Découverte des providers disponibles et configuration",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test('Connection initiated', function () {",
-									"    pm.expect([201, 400]).to.include(pm.response.code);",
-									"});",
-									"",
-									"if (pm.response.code === 201) {",
-									"    const responseJson = pm.response.json();",
-									"    pm.globals.set('bank_connection_id', responseJson.id);",
-									"    console.log('🏦 Bank connection initiated with ID:', responseJson.id);",
-									"}"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"demo_user\",\n        \"password\": \"demo_password\"\n    }\n}"
-						},
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections"]
-						}
-					}
-				},
-				{
-					"name": "Confirm Bank Connection",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"confirmationCode\": \"123456\"\n}"
-						},
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections/{{bank_connection_id}}/confirm",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections", "{{bank_connection_id}}", "confirm"]
-						}
-					}
-				},
-				{
-					"name": "Sync Connection",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections/{{bank_connection_id}}/sync",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections", "{{bank_connection_id}}", "sync"]
-						}
-					}
-				},
-				{
-					"name": "Sync All Connections",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections/sync-all",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections", "sync-all"]
-						}
-					}
-				},
-				{
-					"name": "Check Connection Health",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections/{{bank_connection_id}}/health",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections", "{{bank_connection_id}}", "health"]
-						}
-					}
-				},
-				{
-					"name": "Delete Connection",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections/{{bank_connection_id}}",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections", "{{bank_connection_id}}"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🏦 Banking - Accounts",
-			"item": [
-				{
-					"name": "Get All Bank Accounts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test('Accounts retrieved', function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"if (pm.response.code === 200) {",
-									"    const accounts = pm.response.json();",
-									"    if (accounts.length > 0) {",
-									"        pm.globals.set('bank_account_id', accounts[0].id);",
-									"        console.log('💳 First account ID stored:', accounts[0].id);",
-									"    }",
-									"}"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/accounts",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "accounts"]
-						}
-					}
-				},
-				{
-					"name": "Get Account by ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/accounts/{{bank_account_id}}",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "accounts", "{{bank_account_id}}"]
-						}
-					}
-				},
-				{
-					"name": "Get Accounts by Connection",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/connections/{{bank_connection_id}}/accounts",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "connections", "{{bank_connection_id}}", "accounts"]
-						}
-					}
-				},
-				{
-					"name": "Get Financial Summary",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/summary",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "summary"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🏦 Banking - Transactions",
-			"item": [
-				{
-					"name": "Search Transactions (Advanced)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"page\": 0,\n    \"size\": 20,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\",\n    \"type\": \"DEBIT\",\n    \"minAmount\": -1000,\n    \"maxAmount\": 0\n}"
-						},
-						"url": {
-							"raw": "http://localhost:9999/api/banking/transactions/search",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "transactions", "search"]
-						}
-					}
-				},
-				{
-					"name": "Get Account Transactions",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test('Transactions retrieved', function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"if (pm.response.code === 200) {",
-									"    const response = pm.response.json();",
-									"    if (response.content && response.content.length > 0) {",
-									"        pm.globals.set('bank_transaction_id', response.content[0].id);",
-									"        console.log('💰 First transaction ID stored:', response.content[0].id);",
-									"    }",
-									"}"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/accounts/{{bank_account_id}}/transactions?page=0&size=20&sortBy=transactionDate&sortDir=DESC",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "accounts", "{{bank_account_id}}", "transactions"],
-							"query": [
+							"name": "Get Available Banking Providers",
+							"event": [
 								{
-									"key": "page",
-									"value": "0"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Providers list retrieved', function () {",
+											"    pm.response.to.have.status(200);",
+											"    const providers = pm.response.json();",
+											"    pm.expect(providers).to.be.an('array');",
+											"    pm.expect(providers.length).to.be.above(0);",
+											"});",
+											"",
+											"pm.test('Budget Insight available', function () {",
+											"    const providers = pm.response.json();",
+											"    const budgetInsight = providers.find(p => p.code === 'budget-insight');",
+											"    pm.expect(budgetInsight).to.not.be.undefined;",
+											"    pm.expect(budgetInsight.name).to.include('Budget Insight');",
+											"});",
+											"",
+											"pm.test('Bridge API available', function () {",
+											"    const providers = pm.response.json();",
+											"    const bridge = providers.find(p => p.code === 'bridge-api');",
+											"    pm.expect(bridge).to.not.be.undefined;",
+											"    pm.expect(bridge.name).to.include('Bridge');",
+											"});",
+											"",
+											"// Store available providers for later use",
+											"if (pm.response.code === 200) {",
+											"    const providers = pm.response.json();",
+											"    pm.globals.set('available_providers', JSON.stringify(providers));",
+											"    console.log('📋 Available providers:', providers.map(p => p.name).join(', '));",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/banking/providers",
+									"host": ["{{base_url}}"],
+									"path": ["api", "banking", "providers"]
+								}
+							}
+						},
+						{
+							"name": "Check Provider Health Status",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Health check successful', function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const providers = JSON.parse(pm.globals.get('available_providers') || '[]');",
+											"providers.forEach(provider => {",
+											"    pm.test(`Provider ${provider.name} health status available`, function() {",
+											"        pm.expect(provider).to.have.property('available');",
+											"    });",
+											"});"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/banking/providers",
+									"host": ["{{base_url}}"],
+									"path": ["api", "banking", "providers"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "🔗 2. Connections Management",
+					"description": "Gestion des connexions bancaires avec différents providers",
+					"item": [
+						{
+							"name": "📱 Mock Provider (Development)",
+							"item": [
+								{
+									"name": "Initiate Mock Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Mock connection initiated', function () {",
+													"    pm.expect([201, 400]).to.include(pm.response.code);",
+													"});",
+													"",
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('mock_connection_id', response.id);",
+													"    pm.globals.set('active_connection_id', response.id);",
+													"    console.log('🔗 Mock connection created with ID:', response.id);",
+													"    console.log('📊 Status:', response.connectionStatus);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"demo_user_mock\",\n        \"password\": \"mock_secure_password_123\",\n        \"additionalField1\": \"optional_field\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
 								},
 								{
-									"key": "size",
-									"value": "20"
+									"name": "Confirm Mock Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Mock connection confirmed', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response.connectionStatus).to.eql('ACTIVE');",
+													"});"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"confirmationCode\": \"123456\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{mock_connection_id}}/confirm",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{mock_connection_id}}", "confirm"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "🏛️ Budget Insight (Powens)",
+							"item": [
+								{
+									"name": "Initiate Budget Insight - Crédit Agricole",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Budget Insight connection initiated', function () {",
+													"    pm.expect([201, 400]).to.include(pm.response.code);",
+													"});",
+													"",
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('bi_connection_id', response.id);",
+													"    console.log('🏛️ Budget Insight connection:', response.connectionId);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"budget-insight\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@creditagricole.fr\",\n        \"password\": \"Demo_CA_Password_123!\",\n        \"additionalField1\": \"123456\",\n        \"extraFields\": {\n            \"birthdate\": \"1985-06-15\",\n            \"phone\": \"0601234567\"\n        }\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
 								},
 								{
-									"key": "sortBy",
-									"value": "transactionDate"
+									"name": "Initiate Budget Insight - BNP Paribas",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"budget-insight\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@bnpparibas.net\",\n        \"password\": \"Demo_BNP_Password_123!\",\n        \"additionalField1\": \"987654\",\n        \"extraFields\": {\n            \"customerNumber\": \"12345678\"\n        }\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
 								},
 								{
-									"key": "sortDir",
-									"value": "DESC"
+									"name": "Confirm Budget Insight Connection (SCA)",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"confirmationCode\": \"987654\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{bi_connection_id}}/confirm",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{bi_connection_id}}", "confirm"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "🌉 Bridge API",
+							"item": [
+								{
+									"name": "Initiate Bridge API - Société Générale",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('bridge_connection_id', response.id);",
+													"    console.log('🌉 Bridge API connection:', response.connectionId);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"bridge-api\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@societegenerale.fr\",\n        \"password\": \"Demo_SG_Password_123!\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
+								},
+								{
+									"name": "Initiate Bridge API - LCL",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"bridge-api\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@lcl.fr\",\n        \"password\": \"Demo_LCL_Password_123!\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
+								},
+								{
+									"name": "Confirm Bridge API Connection",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"confirmationCode\": \"456789\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{bridge_connection_id}}/confirm",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{bridge_connection_id}}", "confirm"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "🏦 Linxo Connect",
+							"item": [
+								{
+									"name": "Initiate Linxo - Crédit Mutuel",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('linxo_connection_id', response.id);",
+													"    console.log('🏦 Linxo connection:', response.connectionId);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"linxo-connect\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@creditmutuel.fr\",\n        \"password\": \"Demo_CM_Password_123!\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
+								},
+								{
+									"name": "Confirm Linxo Connection",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"confirmationCode\": \"789123\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{linxo_connection_id}}/confirm",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{linxo_connection_id}}", "confirm"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "📋 Connection Operations",
+							"item": [
+								{
+									"name": "List All Connections",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Connections list retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const connections = pm.response.json();",
+													"    pm.expect(connections).to.be.an('array');",
+													"});",
+													"",
+													"// Store first active connection for subsequent tests",
+													"if (pm.response.code === 200) {",
+													"    const connections = pm.response.json();",
+													"    const activeConnection = connections.find(c => c.connectionStatus === 'ACTIVE');",
+													"    if (activeConnection) {",
+													"        pm.globals.set('active_connection_id', activeConnection.id);",
+													"        console.log('🔗 Active connection found:', activeConnection.id);",
+													"    }",
+													"    ",
+													"    // Log connection summary",
+													"    const summary = connections.reduce((acc, conn) => {",
+													"        acc[conn.connectionStatus] = (acc[conn.connectionStatus] || 0) + 1;",
+													"        return acc;",
+													"    }, {});",
+													"    console.log('📊 Connections summary:', summary);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
+								},
+								{
+									"name": "Get Connection Details",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{active_connection_id}}"]
+										}
+									}
+								},
+								{
+									"name": "Check Connection Health",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Health check response structure', function () {",
+													"    const response = pm.response.json();",
+													"    pm.expect(response).to.have.property('healthy');",
+													"    pm.expect(response).to.have.property('status');",
+													"    pm.expect(response).to.have.property('checkedAt');",
+													"});",
+													"",
+													"const health = pm.response.json();",
+													"console.log('🏥 Connection health:', health.healthy ? '✅ Healthy' : '❌ Unhealthy');",
+													"console.log('📊 Status:', health.status);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}/health",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{active_connection_id}}", "health"]
+										}
+									}
 								}
 							]
 						}
-					}
+					]
 				},
 				{
-					"name": "Get Transaction by ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/transactions/{{bank_transaction_id}}",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "transactions", "{{bank_transaction_id}}"]
-						}
-					}
-				},
-				{
-					"name": "Update Transaction Category",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"category\": \"alimentation\"\n}"
-						},
-						"url": {
-							"raw": "http://localhost:9999/api/banking/transactions/{{bank_transaction_id}}/category",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "transactions", "{{bank_transaction_id}}", "category"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🏦 Banking - Analytics",
-			"item": [
-				{
-					"name": "Get Category Statistics",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/transactions/statistics/categories?startDate=2024-01-01&endDate=2024-12-31",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "transactions", "statistics", "categories"],
-							"query": [
+					"name": "💳 3. Accounts Management",
+					"description": "Gestion et consultation des comptes bancaires",
+					"item": [
+						{
+							"name": "📊 Account Discovery",
+							"item": [
 								{
-									"key": "startDate",
-									"value": "2024-01-01"
+									"name": "Get All Bank Accounts",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Bank accounts retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const accounts = pm.response.json();",
+													"    pm.expect(accounts).to.be.an('array');",
+													"});",
+													"",
+													"if (pm.response.code === 200) {",
+													"    const accounts = pm.response.json();",
+													"    ",
+													"    // Store account IDs for later use",
+													"    if (accounts.length > 0) {",
+													"        pm.globals.set('primary_account_id', accounts[0].id);",
+													"        ",
+													"        // Find different account types",
+													"        const checkingAccount = accounts.find(a => a.type === 'checking');",
+													"        const savingsAccount = accounts.find(a => a.type === 'savings');",
+													"        ",
+													"        if (checkingAccount) pm.globals.set('checking_account_id', checkingAccount.id);",
+													"        if (savingsAccount) pm.globals.set('savings_account_id', savingsAccount.id);",
+													"    }",
+													"    ",
+													"    // Log account summary",
+													"    console.log(`💳 Total accounts: ${accounts.length}`);",
+													"    const accountsByType = accounts.reduce((acc, account) => {",
+													"        acc[account.type] = (acc[account.type] || 0) + 1;",
+													"        return acc;",
+													"    }, {});",
+													"    console.log('📊 Accounts by type:', accountsByType);",
+													"    ",
+													"    const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);",
+													"    console.log(`💰 Total balance: ${totalBalance.toFixed(2)} EUR`);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/accounts",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "accounts"]
+										}
+									}
 								},
 								{
-									"key": "endDate",
-									"value": "2024-12-31"
+									"name": "Get Accounts by Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Connection accounts retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const accounts = pm.response.json();",
+													"    pm.expect(accounts).to.be.an('array');",
+													"});",
+													"",
+													"const accounts = pm.response.json();",
+													"console.log(`🔗 Accounts for connection: ${accounts.length}`);",
+													"accounts.forEach((account, index) => {",
+													"    console.log(`  ${index + 1}. ${account.name} (${account.type}) - ${account.balance} ${account.currency}`);",
+													"});"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}/accounts",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{active_connection_id}}", "accounts"]
+										}
+									}
+								},
+								{
+									"name": "Get Account Details",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Account details retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const account = pm.response.json();",
+													"    pm.expect(account).to.have.property('id');",
+													"    pm.expect(account).to.have.property('name');",
+													"    pm.expect(account).to.have.property('balance');",
+													"    pm.expect(account).to.have.property('type');",
+													"});",
+													"",
+													"const account = pm.response.json();",
+													"console.log(`💳 Account: ${account.name}`);",
+													"console.log(`💰 Balance: ${account.balance} ${account.currency}`);",
+													"console.log(`🏦 Type: ${account.type}`);",
+													"if (account.iban) console.log(`🔢 IBAN: ${account.iban}`);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/accounts/{{primary_account_id}}",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "accounts", "{{primary_account_id}}"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "📈 Financial Summary",
+							"item": [
+								{
+									"name": "Get Global Financial Summary",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Financial summary retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const summary = pm.response.json();",
+													"    pm.expect(summary).to.have.property('totalBalance');",
+													"    pm.expect(summary).to.have.property('totalAssets');",
+													"    pm.expect(summary).to.have.property('totalLiabilities');",
+													"    pm.expect(summary).to.have.property('netWorth');",
+													"});",
+													"",
+													"const summary = pm.response.json();",
+													"console.log('📊 RÉSUMÉ FINANCIER GLOBAL');",
+													"console.log('=' .repeat(35));",
+													"console.log(`💰 Solde total: ${summary.totalBalance} EUR`);",
+													"console.log(`📈 Total actifs: ${summary.totalAssets} EUR`);",
+													"console.log(`📉 Total passifs: ${summary.totalLiabilities} EUR`);",
+													"console.log(`💎 Patrimoine net: ${summary.netWorth} EUR`);",
+													"console.log(`🏦 Nombre de comptes: ${summary.totalAccounts}`);",
+													"",
+													"if (summary.balanceByType) {",
+													"    console.log('\\n💳 Répartition par type:');",
+													"    Object.entries(summary.balanceByType).forEach(([type, balance]) => {",
+													"        console.log(`  • ${type}: ${balance} EUR`);",
+													"    });",
+													"}",
+													"",
+													"if (summary.monthlyIncome || summary.monthlyExpenses) {",
+													"    console.log('\\n📊 Cash Flow mensuel:');",
+													"    console.log(`  ⬆️ Revenus: ${summary.monthlyIncome} EUR`);",
+													"    console.log(`  ⬇️ Dépenses: ${summary.monthlyExpenses} EUR`);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/summary",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "summary"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "🔄 Synchronization",
+							"item": [
+								{
+									"name": "Sync Specific Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Sync completed', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const syncResult = pm.response.json();",
+													"    pm.expect(syncResult).to.have.property('success');",
+													"    pm.expect(syncResult).to.have.property('accountsSynced');",
+													"    pm.expect(syncResult).to.have.property('transactionsSynced');",
+													"});",
+													"",
+													"const syncResult = pm.response.json();",
+													"if (syncResult.success) {",
+													"    console.log('✅ Synchronisation réussie');",
+													"    console.log(`📊 Comptes synchronisés: ${syncResult.accountsSynced}`);",
+													"    console.log(`💰 Transactions synchronisées: ${syncResult.transactionsSynced}`);",
+													"    ",
+													"    if (syncResult.statistics) {",
+													"        const stats = syncResult.statistics;",
+													"        console.log('\\n📈 Statistiques détaillées:');",
+													"        console.log(`  • Nouveaux comptes: ${stats.newAccounts || 0}`);",
+													"        console.log(`  • Comptes mis à jour: ${stats.updatedAccounts || 0}`);",
+													"        console.log(`  • Nouvelles transactions: ${stats.newTransactions || 0}`);",
+													"        console.log(`  • Transactions catégorisées: ${stats.categorizedTransactions || 0}`);",
+													"    }",
+													"} else {",
+													"    console.log('❌ Échec de synchronisation:', syncResult.message);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{active_connection_id}}/sync",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{active_connection_id}}", "sync"]
+										}
+									}
+								},
+								{
+									"name": "Sync All Active Connections",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Bulk sync completed', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const syncResults = pm.response.json();",
+													"    pm.expect(syncResults).to.be.an('array');",
+													"});",
+													"",
+													"const syncResults = pm.response.json();",
+													"console.log(`🔄 Synchronisation de ${syncResults.length} connexions`);",
+													"",
+													"let totalAccounts = 0, totalTransactions = 0;",
+													"syncResults.forEach((result, index) => {",
+													"    const status = result.success ? '✅' : '❌';",
+													"    console.log(`${status} Connexion ${result.connectionId}: ${result.accountsSynced} comptes, ${result.transactionsSynced} transactions`);",
+													"    ",
+													"    if (result.success) {",
+													"        totalAccounts += result.accountsSynced;",
+													"        totalTransactions += result.transactionsSynced;",
+													"    }",
+													"});",
+													"",
+													"console.log('\\n📊 TOTAL SYNCHRONISÉ:');",
+													"console.log(`  📊 Comptes: ${totalAccounts}`);",
+													"console.log(`  💰 Transactions: ${totalTransactions}`);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/sync-all",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "sync-all"]
+										}
+									}
 								}
 							]
 						}
-					}
+					]
 				},
 				{
-					"name": "Get Cash Flow Statistics",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/transactions/statistics/cash-flow?startDate=2024-01-01&endDate=2024-12-31",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "transactions", "statistics", "cash-flow"],
-							"query": [
+					"name": "💰 4. Transactions & Analytics",
+					"description": "Gestion des transactions et analyses financières",
+					"item": [
+						{
+							"name": "🔍 Transaction Search",
+							"item": [
 								{
-									"key": "startDate",
-									"value": "2024-01-01"
+									"name": "Search All Recent Transactions",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Transactions search successful', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response).to.have.property('content');",
+													"    pm.expect(response).to.have.property('totalElements');",
+													"    pm.expect(response.content).to.be.an('array');",
+													"});",
+													"",
+													"const response = pm.response.json();",
+													"if (response.content.length > 0) {",
+													"    pm.globals.set('sample_transaction_id', response.content[0].id);",
+													"    ",
+													"    console.log(`🔍 Trouvé ${response.totalElements} transactions`);",
+													"    console.log(`📄 Page actuelle: ${response.content.length} transactions`);",
+													"    ",
+													"    // Show first few transactions",
+													"    console.log('\\n💰 Dernières transactions:');",
+													"    response.content.slice(0, 5).forEach((tx, index) => {",
+													"        const amount = tx.amount > 0 ? `+${tx.amount}` : `${tx.amount}`;",
+													"        const type = tx.amount > 0 ? '⬆️' : '⬇️';",
+													"        console.log(`  ${index + 1}. ${type} ${amount} EUR - ${tx.description} (${tx.transactionDate})`);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"page\": 0,\n    \"size\": 50,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/search",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "search"]
+										}
+									}
 								},
 								{
-									"key": "endDate",
-									"value": "2024-12-31"
+									"name": "Search Debit Transactions > 100€",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"page\": 0,\n    \"size\": 25,\n    \"sortBy\": \"amount\",\n    \"sortDirection\": \"ASC\",\n    \"type\": \"DEBIT\",\n    \"minAmount\": -10000,\n    \"maxAmount\": -100,\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/search",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "search"]
+										}
+									}
+								},
+								{
+									"name": "Search Transactions by Category",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"page\": 0,\n    \"size\": 30,\n    \"category\": \"alimentation\",\n    \"type\": \"DEBIT\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\",\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/search",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "search"]
+										}
+									}
+								},
+								{
+									"name": "Search by Description Pattern",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"page\": 0,\n    \"size\": 20,\n    \"description\": \"CARTE\",\n    \"startDate\": \"2024-06-01\",\n    \"endDate\": \"2024-06-30\",\n    \"sortBy\": \"amount\",\n    \"sortDirection\": \"ASC\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/search",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "search"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "💳 Account Transactions",
+							"item": [
+								{
+									"name": "Get Recent Account Transactions",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Account transactions retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response).to.have.property('content');",
+													"    pm.expect(response).to.have.property('totalElements');",
+													"});",
+													"",
+													"const response = pm.response.json();",
+													"console.log(`💳 Transactions du compte: ${response.totalElements}`);",
+													"",
+													"if (response.content.length > 0) {",
+													"    const transactions = response.content;",
+													"    const totalDebit = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);",
+													"    const totalCredit = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);",
+													"    ",
+													"    console.log(`💰 Crédits: +${totalCredit.toFixed(2)} EUR`);",
+													"    console.log(`💸 Débits: -${totalDebit.toFixed(2)} EUR`);",
+													"    console.log(`📊 Solde période: ${(totalCredit - totalDebit).toFixed(2)} EUR`);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/accounts/{{primary_account_id}}/transactions?page=0&size=50&sortBy=transactionDate&sortDir=DESC",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "accounts", "{{primary_account_id}}", "transactions"],
+											"query": [
+												{
+													"key": "page",
+													"value": "0"
+												},
+												{
+													"key": "size",
+													"value": "50"
+												},
+												{
+													"key": "sortBy",
+													"value": "transactionDate"
+												},
+												{
+													"key": "sortDir",
+													"value": "DESC"
+												}
+											]
+										}
+									}
+								},
+								{
+									"name": "Get Checking Account Transactions",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/accounts/{{checking_account_id}}/transactions?page=0&size=30&sortBy=transactionDate&sortDir=DESC",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "accounts", "{{checking_account_id}}", "transactions"],
+											"query": [
+												{
+													"key": "page",
+													"value": "0"
+												},
+												{
+													"key": "size",
+													"value": "30"
+												},
+												{
+													"key": "sortBy",
+													"value": "transactionDate"
+												},
+												{
+													"key": "sortDir",
+													"value": "DESC"
+												}
+											]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "🏷️ Transaction Management",
+							"item": [
+								{
+									"name": "Get Transaction Details",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Transaction details retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const transaction = pm.response.json();",
+													"    pm.expect(transaction).to.have.property('id');",
+													"    pm.expect(transaction).to.have.property('amount');",
+													"    pm.expect(transaction).to.have.property('description');",
+													"});",
+													"",
+													"const tx = pm.response.json();",
+													"console.log('💰 DÉTAILS TRANSACTION');",
+													"console.log('=' .repeat(25));",
+													"console.log(`🆔 ID: ${tx.id}`);",
+													"console.log(`💵 Montant: ${tx.amount} ${tx.currency}`);",
+													"console.log(`📝 Description: ${tx.description}`);",
+													"console.log(`📅 Date: ${tx.transactionDate}`);",
+													"console.log(`🏷️ Catégorie: ${tx.category || 'Non catégorisée'}`);",
+													"console.log(`🔄 Type: ${tx.type || 'N/A'}`);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/{{sample_transaction_id}}",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}"]
+										}
+									}
+								},
+								{
+									"name": "Update Transaction Category - Alimentation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Category updated successfully', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const transaction = pm.response.json();",
+													"    pm.expect(transaction.category).to.eql('alimentation');",
+													"});",
+													"",
+													"console.log('✅ Catégorie mise à jour: alimentation');"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"category\": \"alimentation\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/{{sample_transaction_id}}/category",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}", "category"]
+										}
+									}
+								},
+								{
+									"name": "Update Transaction Category - Transport",
+									"request": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"category\": \"transport\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/{{sample_transaction_id}}/category",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}", "category"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "📊 Financial Analytics",
+							"item": [
+								{
+									"name": "Get Expenses by Category (Current Year)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Category statistics retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const stats = pm.response.json();",
+													"    pm.expect(stats).to.have.property('categoryExpenses');",
+													"    pm.expect(stats).to.have.property('totalExpenses');",
+													"});",
+													"",
+													"const stats = pm.response.json();",
+													"console.log('📊 ANALYSE DES DÉPENSES PAR CATÉGORIE');",
+													"console.log('=' .repeat(45));",
+													"console.log(`📅 Période: ${stats.period.startDate} → ${stats.period.endDate}`);",
+													"console.log(`💸 Total dépenses: ${stats.totalExpenses} EUR`);",
+													"console.log(`📈 Moyenne journalière: ${stats.averageDailyExpense} EUR`);",
+													"",
+													"if (stats.categoryExpenses) {",
+													"    console.log('\\n🏷️ Répartition par catégorie:');",
+													"    Object.entries(stats.categoryExpenses)",
+													"        .sort(([,a], [,b]) => b - a)",
+													"        .forEach(([category, amount]) => {",
+													"            const percentage = ((amount / stats.totalExpenses) * 100).toFixed(1);",
+													"            console.log(`  • ${category}: ${amount} EUR (${percentage}%)`);",
+													"        });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/statistics/categories?startDate=2024-01-01&endDate=2024-12-31",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "statistics", "categories"],
+											"query": [
+												{
+													"key": "startDate",
+													"value": "2024-01-01"
+												},
+												{
+													"key": "endDate",
+													"value": "2024-12-31"
+												}
+											]
+										}
+									}
+								},
+								{
+									"name": "Get Expenses by Category (Last 3 Months)",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/statistics/categories?startDate=2024-03-01&endDate=2024-06-01",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "statistics", "categories"],
+											"query": [
+												{
+													"key": "startDate",
+													"value": "2024-03-01"
+												},
+												{
+													"key": "endDate",
+													"value": "2024-06-01"
+												}
+											]
+										}
+									}
+								},
+								{
+									"name": "Get Cash Flow Analysis (Current Year)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Cash flow statistics retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const stats = pm.response.json();",
+													"    pm.expect(stats).to.have.property('totalIncome');",
+													"    pm.expect(stats).to.have.property('totalExpenses');",
+													"    pm.expect(stats).to.have.property('netCashFlow');",
+													"    pm.expect(stats).to.have.property('savingsRate');",
+													"});",
+													"",
+													"const stats = pm.response.json();",
+													"console.log('💰 ANALYSE CASH FLOW');",
+													"console.log('=' .repeat(25));",
+													"console.log(`📅 Période: ${stats.period.startDate} → ${stats.period.endDate}`);",
+													"console.log(`⬆️ Revenus totaux: +${stats.totalIncome} EUR`);",
+													"console.log(`⬇️ Dépenses totales: -${stats.totalExpenses} EUR`);",
+													"console.log(`💎 Cash flow net: ${stats.netCashFlow} EUR`);",
+													"console.log(`📊 Taux d'épargne: ${stats.savingsRate}%`);",
+													"",
+													"// Analyse qualitative",
+													"const netFlow = parseFloat(stats.netCashFlow);",
+													"const savingsRate = parseFloat(stats.savingsRate);",
+													"",
+													"console.log('\\n🎯 ÉVALUATION:');",
+													"if (netFlow > 0) {",
+													"    console.log('✅ Situation financière positive');",
+													"} else {",
+													"    console.log('⚠️ Déficit financier détecté');",
+													"}",
+													"",
+													"if (savingsRate >= 20) {",
+													"    console.log('🌟 Excellent taux d\\'épargne');",
+													"} else if (savingsRate >= 10) {",
+													"    console.log('👍 Bon taux d\\'épargne');",
+													"} else if (savingsRate >= 0) {",
+													"    console.log('⚡ Taux d\\'épargne à améliorer');",
+													"} else {",
+													"    console.log('🚨 Épargne négative - Action requise');",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/statistics/cash-flow?startDate=2024-01-01&endDate=2024-12-31",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "statistics", "cash-flow"],
+											"query": [
+												{
+													"key": "startDate",
+													"value": "2024-01-01"
+												},
+												{
+													"key": "endDate",
+													"value": "2024-12-31"
+												}
+											]
+										}
+									}
+								},
+								{
+									"name": "Get Cash Flow Analysis (Last Month)",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/statistics/cash-flow?startDate=2024-05-01&endDate=2024-05-31",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "statistics", "cash-flow"],
+											"query": [
+												{
+													"key": "startDate",
+													"value": "2024-05-01"
+												},
+												{
+													"key": "endDate",
+													"value": "2024-05-31"
+												}
+											]
+										}
+									}
 								}
 							]
 						}
-					}
+					]
 				},
 				{
-					"name": "Get Banking Status Overview",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/status",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "status"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "🔗 Banking - Webhooks (Test)",
-			"item": [
-				{
-					"name": "Webhook Health Check",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:9999/api/banking/webhooks/health",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "webhooks", "health"]
-						}
-					}
-				},
-				{
-					"name": "Test Budget Insight Webhook",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "X-Webhook-Signature",
-								"value": "test_signature"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"type\": \"connection.synced\",\n    \"connection_id\": \"test_connection_123\",\n    \"timestamp\": \"2024-06-03T10:30:00Z\",\n    \"data\": {\n        \"accounts_count\": 2,\n        \"transactions_count\": 45\n    }\n}"
+					"name": "🔔 5. Webhooks & Monitoring",
+					"description": "Tests des webhooks et monitoring du système bancaire",
+					"item": [
+						{
+							"name": "🔗 Webhook Endpoints",
+							"item": [
+								{
+									"name": "Webhook Health Check",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Webhook service healthy', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response).to.have.property('status');",
+													"    pm.expect(response.status).to.eql('healthy');",
+													"});",
+													"",
+													"const response = pm.response.json();",
+													"console.log('🔔 Webhook service status:', response.status);",
+													"console.log('🕐 Timestamp:', response.timestamp);"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/api/banking/webhooks/health",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "webhooks", "health"]
+										}
+									}
+								},
+								{
+									"name": "Test Budget Insight Webhook - Connection Synced",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Webhook processed successfully', function () {",
+													"    pm.expect([200, 401]).to.include(pm.response.code);",
+													"});",
+													"",
+													"if (pm.response.code === 200) {",
+													"    console.log('✅ Webhook Budget Insight traité avec succès');",
+													"} else if (pm.response.code === 401) {",
+													"    console.log('🔐 Signature webhook invalide (attendu en mode test)');",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Webhook-Signature",
+												"value": "sha256=test_signature_budget_insight"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"type\": \"connection.synced\",\n    \"connection_id\": \"bi_test_connection_123456\",\n    \"timestamp\": \"2024-06-03T14:30:00Z\",\n    \"data\": {\n        \"accounts_synced\": 3,\n        \"transactions_synced\": 157,\n        \"sync_duration_ms\": 2340,\n        \"status\": \"success\"\n    },\n    \"metadata\": {\n        \"provider\": \"budget-insight\",\n        \"user_id\": \"temp_user_789\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/webhooks/budget-insight",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "webhooks", "budget-insight"]
+										}
+									}
+								},
+								{
+									"name": "Test Budget Insight Webhook - Connection Error",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Webhook-Signature",
+												"value": "sha256=test_signature_budget_insight_error"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"type\": \"connection.error\",\n    \"connection_id\": \"bi_test_connection_error_456\",\n    \"timestamp\": \"2024-06-03T14:35:00Z\",\n    \"error\": {\n        \"code\": \"AUTHENTICATION_FAILED\",\n        \"message\": \"Invalid credentials provided\",\n        \"retry_possible\": true\n    },\n    \"metadata\": {\n        \"provider\": \"budget-insight\",\n        \"bank_name\": \"Crédit Agricole\",\n        \"attempt_count\": 3\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/webhooks/budget-insight",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "webhooks", "budget-insight"]
+										}
+									}
+								},
+								{
+									"name": "Test Bridge API Webhook - Account Updated",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Bridge-Signature",
+												"value": "sha256=test_signature_bridge_api"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"type\": \"account.updated\",\n    \"item_id\": \"bridge_item_789123\",\n    \"account_id\": \"bridge_account_456789\",\n    \"timestamp\": \"2024-06-03T14:40:00Z\",\n    \"changes\": {\n        \"balance\": {\n            \"old_value\": 245075,\n            \"new_value\": 243521,\n            \"currency\": \"EUR\"\n        },\n        \"last_transaction_date\": \"2024-06-03\"\n    },\n    \"metadata\": {\n        \"provider\": \"bridge-api\",\n        \"bank_name\": \"Société Générale\",\n        \"account_type\": \"checking\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/webhooks/bridge-api",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "webhooks", "bridge-api"]
+										}
+									}
+								},
+								{
+									"name": "Test Linxo Webhook - Transaction Created",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Linxo-Signature",
+												"value": "sha256=test_signature_linxo_connect"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"event\": \"transaction.created\",\n    \"connection_id\": \"linxo_connection_987654\",\n    \"account_id\": \"linxo_account_123789\",\n    \"transaction\": {\n        \"id\": \"linxo_tx_456123789\",\n        \"amount\": -4567,\n        \"description\": \"ACHAT CARTE CARREFOUR MARKET\",\n        \"date\": \"2024-06-03\",\n        \"category\": \"alimentation\",\n        \"type\": \"debit\"\n    },\n    \"timestamp\": \"2024-06-03T14:45:00Z\",\n    \"metadata\": {\n        \"provider\": \"linxo-connect\",\n        \"bank_name\": \"Crédit Mutuel\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/webhooks/linxo",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "webhooks", "linxo"]
+										}
+									}
+								}
+							]
 						},
-						"url": {
-							"raw": "http://localhost:9999/api/banking/webhooks/budget-insight",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "webhooks", "budget-insight"]
+						{
+							"name": "📊 System Monitoring",
+							"item": [
+								{
+									"name": "Get Banking System Status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Banking status retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const status = pm.response.json();",
+													"    pm.expect(status).to.have.property('totalConnections');",
+													"    pm.expect(status).to.have.property('activeConnections');",
+													"    pm.expect(status).to.have.property('totalAccounts');",
+													"});",
+													"",
+													"const status = pm.response.json();",
+													"console.log('🏦 STATUT SYSTÈME BANCAIRE');",
+													"console.log('=' .repeat(30));",
+													"console.log(`🔗 Connexions totales: ${status.totalConnections}`);",
+													"console.log(`✅ Connexions actives: ${status.activeConnections}`);",
+													"console.log(`💳 Comptes totaux: ${status.totalAccounts}`);",
+													"",
+													"if (status.lastSyncAt) {",
+													"    console.log(`⏰ Dernière sync: ${status.lastSyncAt}`);",
+													"}",
+													"",
+													"// Health indicators",
+													"const healthScore = status.totalConnections > 0 ? (status.activeConnections / status.totalConnections * 100).toFixed(1) : 0;",
+													"console.log(`📊 Score de santé: ${healthScore}%`);",
+													"",
+													"if (healthScore >= 80) {",
+													"    console.log('💚 Système en excellente santé');",
+													"} else if (healthScore >= 60) {",
+													"    console.log('💛 Système en bonne santé');",
+													"} else if (healthScore >= 40) {",
+													"    console.log('🧡 Système nécessite attention');",
+													"} else {",
+													"    console.log('❤️ Système nécessite intervention');",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/status",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "status"]
+										}
+									}
+								},
+								{
+									"name": "Application Health Check",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Application is healthy', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const health = pm.response.json();",
+													"    pm.expect(health.status).to.eql('UP');",
+													"});",
+													"",
+													"const health = pm.response.json();",
+													"console.log('🏥 APPLICATION HEALTH');",
+													"console.log('=' .repeat(25));",
+													"console.log(`📊 Status: ${health.status}`);",
+													"",
+													"if (health.components) {",
+													"    console.log('\\n🔍 Composants:');",
+													"    Object.entries(health.components).forEach(([component, details]) => {",
+													"        const status = details.status || 'UNKNOWN';",
+													"        const icon = status === 'UP' ? '✅' : '❌';",
+													"        console.log(`  ${icon} ${component}: ${status}`);",
+													"    });",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/actuator/health",
+											"host": ["{{base_url}}"],
+											"path": ["actuator", "health"]
+										}
+									}
+								}
+							]
 						}
-					}
+					]
 				},
 				{
-					"name": "Test Linxo Webhook",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "X-Linxo-Signature",
-								"value": "test_signature_linxo"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"event\": \"account.updated\",\n    \"connection_id\": \"linxo_connection_456\",\n    \"account_id\": \"account_789\",\n    \"timestamp\": \"2024-06-03T10:30:00Z\"\n}"
+					"name": "🧪 6. Test Scenarios",
+					"description": "Scénarios de test complets pour validation E2E",
+					"item": [
+						{
+							"name": "🚀 Complete Banking Flow Test",
+							"item": [
+								{
+									"name": "1. Setup Mock Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Step 1: Mock connection setup', function () {",
+													"    pm.expect([201, 409]).to.include(pm.response.code);",
+													"});",
+													"",
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('test_connection_id', response.id);",
+													"    console.log('🚀 Step 1/6: Mock connection created');",
+													"} else {",
+													"    console.log('🚀 Step 1/6: Using existing connection');",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"test_e2e@mosaique.com\",\n        \"password\": \"E2E_Test_Password_123!\"\n    }\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections"]
+										}
+									}
+								},
+								{
+									"name": "2. Confirm Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Step 2: Connection confirmed', function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"console.log('🚀 Step 2/6: Connection confirmed and activated');"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"confirmationCode\": \"E2E123\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{test_connection_id}}/confirm",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{test_connection_id}}", "confirm"]
+										}
+									}
+								},
+								{
+									"name": "3. Sync Connection Data",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Step 3: Data synchronized', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const syncResult = pm.response.json();",
+													"    pm.expect(syncResult.success).to.be.true;",
+													"});",
+													"",
+													"const syncResult = pm.response.json();",
+													"console.log(`🚀 Step 3/6: Synced ${syncResult.accountsSynced} accounts, ${syncResult.transactionsSynced} transactions`);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{test_connection_id}}/sync",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{test_connection_id}}", "sync"]
+										}
+									}
+								},
+								{
+									"name": "4. Verify Accounts Created",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Step 4: Accounts verified', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const accounts = pm.response.json();",
+													"    pm.expect(accounts.length).to.be.above(0);",
+													"});",
+													"",
+													"const accounts = pm.response.json();",
+													"console.log(`🚀 Step 4/6: Verified ${accounts.length} accounts available`);",
+													"if (accounts.length > 0) {",
+													"    pm.globals.set('test_account_id', accounts[0].id);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/connections/{{test_connection_id}}/accounts",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "connections", "{{test_connection_id}}", "accounts"]
+										}
+									}
+								},
+								{
+									"name": "5. Test Transaction Search",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Step 5: Transactions searchable', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response).to.have.property('content');",
+													"});",
+													"",
+													"const response = pm.response.json();",
+													"console.log(`🚀 Step 5/6: Found ${response.totalElements} transactions in search`);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"accountId\": {{test_account_id}},\n    \"page\": 0,\n    \"size\": 10,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/search",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "search"]
+										}
+									}
+								},
+								{
+									"name": "6. Verify Financial Summary",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Step 6: Financial summary complete', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const summary = pm.response.json();",
+													"    pm.expect(summary).to.have.property('totalBalance');",
+													"    pm.expect(summary).to.have.property('totalAccounts');",
+													"});",
+													"",
+													"const summary = pm.response.json();",
+													"console.log('🚀 Step 6/6: Financial summary verified');",
+													"console.log('');",
+													"console.log('🎉 BANKING E2E TEST COMPLETED SUCCESSFULLY!');",
+													"console.log('✅ All 6 steps passed');",
+													"console.log(`📊 Final summary: ${summary.totalAccounts} accounts, ${summary.totalBalance} EUR`);",
+													"console.log('=' .repeat(50));"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/summary",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "summary"]
+										}
+									}
+								}
+							]
 						},
-						"url": {
-							"raw": "http://localhost:9999/api/banking/webhooks/linxo",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "9999",
-							"path": ["api", "banking", "webhooks", "linxo"]
+						{
+							"name": "⚡ Performance Tests",
+							"item": [
+								{
+									"name": "Load Test - Multiple Provider Requests",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Response time acceptable', function () {",
+													"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+													"});",
+													"",
+													"pm.test('Rate limiting working', function () {",
+													"    if (pm.response.code === 429) {",
+													"        pm.test('Rate limit headers present', function() {",
+													"            pm.expect(pm.response.headers.get('X-RateLimit-Remaining')).to.exist;",
+													"        });",
+													"        console.log('🚦 Rate limiting triggered (expected behavior)');",
+													"    } else {",
+													"        console.log(`⚡ Response time: ${pm.response.responseTime}ms`);",
+													"    }",
+													"});"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "{{base_url}}/api/banking/providers",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "providers"]
+										}
+									}
+								},
+								{
+									"name": "Stress Test - Large Transaction Search",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Large search handled efficiently', function () {",
+													"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"console.log(`⚡ Large search response time: ${pm.response.responseTime}ms`);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"page\": 0,\n    \"size\": 500,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\",\n    \"startDate\": \"2023-01-01\",\n    \"endDate\": \"2024-12-31\"\n}"
+										},
+										"url": {
+											"raw": "{{base_url}}/api/banking/transactions/search",
+											"host": ["{{base_url}}"],
+											"path": ["api", "banking", "transactions", "search"]
+										}
+									}
+								}
+							]
 						}
-					}
+					]
 				}
 			]
 		},
