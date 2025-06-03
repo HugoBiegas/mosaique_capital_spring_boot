@@ -12,7 +12,7 @@ import java.util.List;
 public interface BankAccountMapper {
 
 
-    @Mapping(target = "recentTransactions", ignore = true) // Sera géré séparément pour éviter N+1
+    @Mapping(target = "recentTransactions", ignore = true)
     BankAccountDto toDto(BankAccount bankAccount);
 
     List<BankAccountDto> toDtoList(List<BankAccount> bankAccounts);
