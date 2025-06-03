@@ -25,6 +25,8 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
             "FROM Asset a WHERE a.owner = :owner GROUP BY a.type.id, a.type.code, a.type.label")
     List<AssetDistributionProjection> getAssetDistributionByType(@Param("owner") User owner);
 
+    List<Asset> findByOwnerAndTypeIn (User owner, List<AssetTypeEntity> types);
+
     // Interface de projection pour les résultats de distribution
     interface AssetDistributionProjection {
         String getType();
