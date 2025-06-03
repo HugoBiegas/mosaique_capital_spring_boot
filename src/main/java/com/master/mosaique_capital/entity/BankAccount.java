@@ -40,6 +40,8 @@ public class BankAccount {
 
     private String currency = "EUR";
 
+    private String iban;
+
     private LocalDateTime lastSyncAt;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)

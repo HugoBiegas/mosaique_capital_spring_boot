@@ -654,7 +654,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/REAL_ESTATE",
+									"raw": "http://localhost:9999/api/assets/type/REAL_ESTATE?includeSubTypes=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
@@ -867,7 +867,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/FINANCIAL_STOCKS",
+									"raw": "http://localhost:9999/api/assets/type/FINANCIAL_STOCKS?includeSubTypes=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
@@ -999,7 +999,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/CASH_SAVINGS",
+									"raw": "http://localhost:9999/api/assets/type/CASH_SAVINGS?includeSubTypes=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
@@ -1077,7 +1077,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/CRYPTOCURRENCY",
+									"raw": "http://localhost:9999/api/assets/type/CRYPTOCURRENCY?includeSubTypes=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
@@ -1209,7 +1209,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/OTHERS_ART",
+									"raw": "http://localhost:9999/api/assets/type/OTHERS_ART?includeSubTypes=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
@@ -1368,7 +1368,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/LIABILITIES_MORTGAGE",
+									"raw": "http://localhost:9999/api/assets/type/LIABILITIES_MORTGAGE?includeSubTypes=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",

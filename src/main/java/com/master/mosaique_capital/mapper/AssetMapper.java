@@ -15,10 +15,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface AssetMapper {
 
-    /**
-     * ⭐ CORRECTION CRITIQUE : Ignorer le champ 'type' lors du mapping
-     * Le service AssetService se charge de définir le type manuellement
-     */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "owner", ignore = true)
     @Mapping(target = "type", ignore = true)  // ⭐ AJOUTÉ : Ignore le type
@@ -44,24 +40,21 @@ public interface AssetMapper {
     @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromDto(AssetDto dto, @MappingTarget Asset asset);
 
-    default AssetType mapEntityToEnum(AssetTypeEntity value) {
-        if (value == null || value.getCode() == null) {
+    /**
+     * ✅ CORRECTION : Une seule méthode de mapping pour éviter l'ambiguïté
+     * Mapping manuel pour le champ type (entity vers enum)
+     */
+    default AssetType map(AssetTypeEntity assetTypeEntity) {
+        if (assetTypeEntity == null || assetTypeEntity.getCode() == null) {
             return null;
         }
 
         try {
-            return AssetType.valueOf(value.getCode());
+            return AssetType.valueOf(assetTypeEntity.getCode());
         } catch (IllegalArgumentException e) {
             // Log de l'erreur pour debugging
-            System.err.println("⚠️ Code AssetType non trouvé dans l'enum: " + value.getCode());
+            System.err.println("⚠️ Code AssetType non trouvé dans l'enum: " + assetTypeEntity.getCode());
             return null;
         }
-    }
-
-    /**
-     * Mapping manuel pour le champ type (entity vers enum)
-     */
-    default AssetType map(AssetTypeEntity value) {
-        return mapEntityToEnum(value);
     }
 }

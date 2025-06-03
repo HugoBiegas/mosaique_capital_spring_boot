@@ -113,9 +113,7 @@ public class BankAccountSyncService {
         }
     }
 
-    /**
-     * Synchronise un compte bancaire
-     */
+
     private BankAccount syncAccount(BankConnection connection, ExternalAccountDto externalAccount) {
         Optional<BankAccount> existingAccount = bankAccountRepository
                 .findByConnectionAndAccountId(connection, externalAccount.getExternalId());
@@ -128,6 +126,8 @@ public class BankAccountSyncService {
             account.setType(externalAccount.getType());
             account.setBalance(externalAccount.getBalance());
             account.setCurrency(externalAccount.getCurrency());
+            // ✅ AJOUT : Mise à jour de l'IBAN
+            account.setIban(externalAccount.getIban());
             account.setLastSyncAt(LocalDateTime.now());
         } else {
             // Création d'un nouveau compte
@@ -138,12 +138,13 @@ public class BankAccountSyncService {
             account.setType(externalAccount.getType());
             account.setBalance(externalAccount.getBalance());
             account.setCurrency(externalAccount.getCurrency());
+            // ✅ AJOUT : Définition de l'IBAN pour les nouveaux comptes
+            account.setIban(externalAccount.getIban());
             account.setLastSyncAt(LocalDateTime.now());
         }
 
         return bankAccountRepository.save(account);
     }
-
     /**
      * Synchronise une transaction bancaire
      */

@@ -34,8 +34,9 @@ public class AssetController {
     }
 
     @GetMapping("/type/{type}")
-    public ResponseEntity<List<AssetDto>> getAssetsByType(@PathVariable AssetType type) {
-        return ResponseEntity.ok(assetService.getAssetsByType(type));
+    public ResponseEntity<List<AssetDto>> getAssetsByType(@PathVariable AssetType type,
+                                                          @RequestParam(defaultValue = "false") boolean includeSubTypes) {
+        return ResponseEntity.ok(assetService.getAssetsByType(type,includeSubTypes));
     }
 
     @PostMapping

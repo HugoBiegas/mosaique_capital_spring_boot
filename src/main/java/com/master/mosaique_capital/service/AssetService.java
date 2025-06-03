@@ -13,7 +13,6 @@ import com.master.mosaique_capital.repository.AssetRepository;
 import com.master.mosaique_capital.repository.AssetTypeRepository;
 import com.master.mosaique_capital.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,7 +27,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AssetService {
 
     private final AssetRepository assetRepository;
@@ -44,11 +42,20 @@ public class AssetService {
     }
 
     @Transactional(readOnly = true)
-    public List<AssetDto> getAssetsByType(AssetType type) {
+    public List<AssetDto> getAssetsByType(AssetType type, boolean includeSubTypes) {
         User currentUser = getCurrentUser();
-        AssetTypeEntity assetTypeEntity = findAssetTypeByCode(type.name());
 
-        List<Asset> assets = assetRepository.findByOwnerAndType(currentUser, assetTypeEntity);
+        List<AssetTypeEntity> assetTypeEntities;
+        if (includeSubTypes) {
+            // Récupère tous les types dont le code commence par le préfixe du type demandé
+            assetTypeEntities = assetTypeRepository.findByCodeStartingWith(type.name());
+        } else {
+            AssetTypeEntity assetTypeEntity = assetTypeRepository.findByCode(type.name())
+                    .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + type.name()));
+            assetTypeEntities = List.of(assetTypeEntity);
+        }
+
+        List<Asset> assets = assetRepository.findByOwnerAndTypeIn(currentUser, assetTypeEntities);
         return assetMapper.toDtoList(assets);
     }
 
@@ -59,82 +66,43 @@ public class AssetService {
         return assetMapper.toDto(asset);
     }
 
-
     @Transactional
     public AssetDto createAsset(AssetCreateRequest dto) {
-        log.info("🔄 Création d'un nouvel asset de type: {}", dto.getType());
+        User currentUser = getCurrentUser();
 
-        try {
-            // 1. Récupérer l'utilisateur actuel
-            User currentUser = getCurrentUser();
-            log.debug("👤 Utilisateur: {}", currentUser.getUsername());
+        // Récupérer le type d'actif de la base de données
+        AssetTypeEntity assetType = assetTypeRepository.findByCode(dto.getType().name())
+                .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + dto.getType().name()));
 
-            // 2. Récupérer le type d'actif de la base de données
-            AssetTypeEntity assetType = findAssetTypeByCode(dto.getType().name());
-            log.debug("📂 Type d'asset trouvé: {} (ID: {})", assetType.getCode(), assetType.getId());
+        // Créer et configurer l'entité Asset
+        Asset asset = assetMapper.toEntity(dto);
+        asset.setType(assetType);
+        asset.setOwner(currentUser);
 
-            // 3. Créer l'entité Asset via le mapper (sans le type)
-            Asset asset = assetMapper.toEntity(dto);
-
-            // 4. Définir manuellement les champs requis
-            asset.setType(assetType);
-            asset.setOwner(currentUser);
-
-            log.debug("💰 Asset à sauvegarder: nom={}, valeur={}, type={}",
-                    asset.getName(), asset.getCurrentValue(), asset.getType().getCode());
-
-            // 5. Sauvegarder l'asset
-            Asset savedAsset = assetRepository.save(asset);
-            log.info("✅ Asset créé avec succès (ID: {})", savedAsset.getId());
-
-            // 6. Retourner le DTO
-            return assetMapper.toDto(savedAsset);
-
-        } catch (Exception e) {
-            log.error("❌ Erreur lors de la création de l'asset: {}", e.getMessage(), e);
-            throw e; // Re-lancer l'exception pour que Spring la gère
-        }
+        Asset savedAsset = assetRepository.save(asset);
+        return assetMapper.toDto(savedAsset);
     }
-
 
     @Transactional
     public AssetDto updateAsset(Long id, AssetDto dto) {
-        log.info("🔄 Mise à jour de l'asset ID: {}", id);
-
         Asset asset = findAssetById(id);
         checkAssetOwnership(asset);
 
-        try {
-            // Mise à jour du type si nécessaire
-            if (dto.getType() != null) {
-                AssetTypeEntity assetType = findAssetTypeByCode(dto.getType().name());
-                asset.setType(assetType);
-                log.debug("📂 Type mis à jour: {}", assetType.getCode());
-            }
-
-            // Mise à jour des autres champs
-            if (dto.getName() != null) {
-                asset.setName(dto.getName());
-            }
-            if (dto.getDescription() != null) {
-                asset.setDescription(dto.getDescription());
-            }
-            if (dto.getCurrentValue() != null) {
-                asset.setCurrentValue(dto.getCurrentValue());
-            }
-            if (dto.getCurrency() != null) {
-                asset.setCurrency(dto.getCurrency());
-            }
-
-            Asset updatedAsset = assetRepository.save(asset);
-            log.info("✅ Asset mis à jour avec succès");
-
-            return assetMapper.toDto(updatedAsset);
-
-        } catch (Exception e) {
-            log.error("❌ Erreur lors de la mise à jour de l'asset: {}", e.getMessage(), e);
-            throw e;
+        // Si le type change, récupérer le nouveau type
+        if (dto.getType() != null) {
+            AssetTypeEntity assetType = assetTypeRepository.findByCode(dto.getType().name())
+                    .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + dto.getType().name()));
+            asset.setType(assetType);
         }
+
+        // Mettre à jour les autres champs
+        if (dto.getName() != null) asset.setName(dto.getName());
+        if (dto.getDescription() != null) asset.setDescription(dto.getDescription());
+        if (dto.getCurrentValue() != null) asset.setCurrentValue(dto.getCurrentValue());
+        if (dto.getCurrency() != null) asset.setCurrency(dto.getCurrency());
+
+        Asset updatedAsset = assetRepository.save(asset);
+        return assetMapper.toDto(updatedAsset);
     }
 
     @Transactional
@@ -142,7 +110,6 @@ public class AssetService {
         Asset asset = findAssetById(id);
         checkAssetOwnership(asset);
         assetRepository.delete(asset);
-        log.info("🗑️ Asset supprimé (ID: {})", id);
     }
 
     @Transactional(readOnly = true)
@@ -168,53 +135,20 @@ public class AssetService {
                 .collect(Collectors.toList());
     }
 
-    // ===== MÉTHODES UTILITAIRES AMÉLIORÉES =====
-
-    /**
-     * ⭐ MÉTHODE AMÉLIORÉE : Recherche d'asset avec logs détaillés
-     */
     public Asset findAssetById(Long id) {
-        log.debug("🔍 Recherche asset ID: {}", id);
         return assetRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("❌ Asset non trouvé (ID: {})", id);
-                    return new ResourceNotFoundException("Actif non trouvé avec l'ID: " + id);
-                });
-    }
-
-    /**
-     * ⭐ NOUVELLE MÉTHODE : Recherche de type d'asset avec logs détaillés
-     */
-    private AssetTypeEntity findAssetTypeByCode(String code) {
-        log.debug("🔍 Recherche type d'asset: {}", code);
-        return assetTypeRepository.findByCode(code)
-                .orElseThrow(() -> {
-                    log.error("❌ Type d'actif non trouvé: {}", code);
-                    log.info("📋 Types disponibles: {}",
-                            assetTypeRepository.findAll().stream()
-                                    .map(AssetTypeEntity::getCode)
-                                    .collect(Collectors.toList()));
-                    return new ResourceNotFoundException("Type d'actif non trouvé: " + code);
-                });
+                .orElseThrow(() -> new ResourceNotFoundException("Actif non trouvé avec l'ID: " + id));
     }
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        log.debug("🔍 Recherche utilisateur: {}", username);
-
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> {
-                    log.error("❌ Utilisateur non trouvé: {}", username);
-                    return new ResourceNotFoundException("Utilisateur non trouvé");
-                });
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
     }
 
     private void checkAssetOwnership(Asset asset) {
         User currentUser = getCurrentUser();
         if (!asset.getOwner().getId().equals(currentUser.getId())) {
-            log.warn("🚫 Tentative d'accès non autorisé à l'asset {} par l'utilisateur {}",
-                    asset.getId(), currentUser.getUsername());
             throw new AccessDeniedException("Vous n'avez pas les droits pour accéder à cet actif");
         }
     }

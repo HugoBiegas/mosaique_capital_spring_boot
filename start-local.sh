@@ -1,6 +1,6 @@
 #!/bin/bash
 # =================================================================
-# SCRIPT DE DÉMARRAGE LOCAL - MOSAÏQUE CAPITAL
+# SCRIPT DE DÉMARRAGE LOCAL AMÉLIORÉ - MOSAÏQUE CAPITAL
 # =================================================================
 # Usage: ./start-local.sh
 
@@ -24,27 +24,47 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-# Charger les variables d'environnement depuis .env
-echo -e "${BLUE}🔧 Chargement des variables d'environnement...${NC}"
-set -a  # Exporter automatiquement toutes les variables
-source .env
-set +a
+# ✅ CORRECTION : Fonction sécurisée pour charger les variables .env
+load_env_vars() {
+    echo -e "${BLUE}🔧 Chargement sécurisé des variables d'environnement...${NC}"
+
+    # Lire le fichier .env ligne par ligne et exporter les variables
+    while IFS='=' read -r key value; do
+        # Ignorer les lignes vides et les commentaires
+        [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+
+        # Nettoyer la clé (supprimer les espaces)
+        key=$(echo "$key" | xargs)
+
+        # Nettoyer la valeur (supprimer les guillemets si présents)
+        value=$(echo "$value" | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+
+        # Exporter la variable
+        if [[ -n "$key" && -n "$value" ]]; then
+            export "$key"="$value"
+            echo -e "   ✓ ${key}"
+        fi
+    done < .env
+}
+
+# Charger les variables d'environnement
+load_env_vars
 
 echo -e "${GREEN}✅ Variables d'environnement chargées${NC}"
 
 # Vérifier les variables critiques
 echo -e "${BLUE}🔍 Vérification des variables critiques...${NC}"
-critical_vars="APP_JWT_SECRET SPRING_DATASOURCE_PASSWORD"
-missing_vars=""
+critical_vars=("APP_JWT_SECRET" "DATABASE_PASSWORD")
+missing_vars=()
 
-for var in $critical_vars; do
-    if [ -z "${!var}" ]; then
-        missing_vars="$missing_vars $var"
+for var in "${critical_vars[@]}"; do
+    if [[ -z "${!var}" ]]; then
+        missing_vars+=("$var")
     fi
 done
 
-if [ -n "$missing_vars" ]; then
-    echo -e "${RED}❌ Variables manquantes dans .env :$missing_vars${NC}"
+if [[ ${#missing_vars[@]} -gt 0 ]]; then
+    echo -e "${RED}❌ Variables manquantes dans .env : ${missing_vars[*]}${NC}"
     exit 1
 fi
 
@@ -54,15 +74,37 @@ echo -e "${GREEN}✅ Variables critiques validées${NC}"
 echo -e "${BLUE}📋 Configuration détectée :${NC}"
 echo -e "   - Profil Spring: ${SPRING_PROFILES_ACTIVE:-dev}"
 echo -e "   - Port serveur: ${SERVER_PORT:-9999}"
-echo -e "   - Base de données: ${SPRING_DATASOURCE_URL:-Non définie}"
-echo -e "   - Redis: ${SPRING_REDIS_HOST:-localhost}:${SPRING_REDIS_PORT:-6379}"
+echo -e "   - Base de données: ${DATABASE_USERNAME:-Non défini}@localhost:${DATABASE_PORT:-3306}"
+echo -e "   - Redis: localhost:${REDIS_PORT:-6379}"
+
+# Vérifier la disponibilité de Maven
+if ! command -v ./mvnw &> /dev/null; then
+    echo -e "${RED}❌ Maven Wrapper (mvnw) non trouvé !${NC}"
+    exit 1
+fi
+
+# Rendre mvnw exécutable si nécessaire
+if [[ ! -x ./mvnw ]]; then
+    echo -e "${YELLOW}🔧 Rendre mvnw exécutable...${NC}"
+    chmod +x ./mvnw
+fi
 
 # Nettoyer et compiler
 echo -e "${BLUE}🧹 Nettoyage et compilation...${NC}"
-./mvnw clean compile
+if ! ./mvnw clean compile -q; then
+    echo -e "${RED}❌ Erreur lors de la compilation${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Compilation réussie${NC}"
 
 # Démarrer l'application
 echo -e "${GREEN}🚀 Démarrage de l'application Spring Boot...${NC}"
-./mvnw spring-boot:run
+echo -e "${YELLOW}💡 Pour arrêter l'application : Ctrl+C${NC}"
+echo -e ""
 
-# Note: Les variables d'environnement sont automatiquement transmises à Maven
+# Démarrage avec gestion d'erreur
+if ! ./mvnw spring-boot:run; then
+    echo -e "${RED}❌ Erreur lors du démarrage de l'application${NC}"
+    exit 1
+fi

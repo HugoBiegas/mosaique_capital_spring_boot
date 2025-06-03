@@ -143,6 +143,7 @@ CREATE TABLE IF NOT EXISTS `bank_accounts` (
     `name` VARCHAR(100) NOT NULL,
     `type` VARCHAR(50) NOT NULL,
     `balance` DECIMAL(19,4) NOT NULL,
+    `iban` VARCHAR(100) NOT NULL,
     `currency` VARCHAR(3) NOT NULL DEFAULT 'EUR',
     `last_sync_at` DATETIME NULL,
     `created_at` DATETIME NOT NULL,
