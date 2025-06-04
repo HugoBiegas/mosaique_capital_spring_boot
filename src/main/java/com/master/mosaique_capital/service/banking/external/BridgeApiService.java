@@ -35,7 +35,6 @@ public class BridgeApiService {
     // Cache pour les tokens d'accès Bridge
     private final Map<String, TokenInfo> tokenCache = new ConcurrentHashMap<>();
 
-    // ✅ CORRECTION : Ajout de valeurs par défaut pour éviter les erreurs de démarrage
     @Value("${app.banking.bridge.api-url:https://api.bridgeapi.io/v2}")
     private String apiUrl;
 

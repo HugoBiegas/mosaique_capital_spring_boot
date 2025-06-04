@@ -17,7 +17,7 @@ public interface AssetMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "owner", ignore = true)
-    @Mapping(target = "type", ignore = true)  // ⭐ AJOUTÉ : Ignore le type
+    @Mapping(target = "type", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Asset toEntity(AssetCreateRequest dto);
