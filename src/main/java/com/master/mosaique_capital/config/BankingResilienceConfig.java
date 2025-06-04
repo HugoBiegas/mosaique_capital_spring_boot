@@ -173,7 +173,7 @@ public class BankingResilienceConfig {
     private void configureProviderCircuitBreakers(CircuitBreakerRegistry registry) {
         // Budget Insight - Plus tolérant (historiquement stable)
         CircuitBreakerConfig budgetInsightConfig = CircuitBreakerConfig.custom()
-                .failureRateThreshold(60.0f) // Plus tolérant
+                .failureRateThreshold(60.0f)
                 .minimumNumberOfCalls(15)
                 .slidingWindowSize(30)
                 .waitDurationInOpenState(Duration.ofSeconds(45))
@@ -191,14 +191,23 @@ public class BankingResilienceConfig {
 
         // Linxo - Plus strict (peut être moins stable)
         CircuitBreakerConfig linxoConfig = CircuitBreakerConfig.custom()
-                .failureRateThreshold(40.0f) // Plus strict
+                .failureRateThreshold(40.0f)
                 .minimumNumberOfCalls(8)
                 .slidingWindowSize(15)
                 .waitDurationInOpenState(Duration.ofSeconds(60))
                 .build();
         registry.circuitBreaker("linxo", linxoConfig);
 
-        log.info("🔧 Circuit Breakers spécifiques configurés pour chaque provider bancaire");
+        // ✅ TINK - Configuration optimale (API gratuite et stable)
+        CircuitBreakerConfig tinkConfig = CircuitBreakerConfig.custom()
+                .failureRateThreshold(50.0f) // Standard
+                .minimumNumberOfCalls(5) // Plus permissif pour débuter
+                .slidingWindowSize(15)
+                .waitDurationInOpenState(Duration.ofSeconds(30))
+                .build();
+        registry.circuitBreaker("tink", tinkConfig);
+
+        log.info("🔧 Circuit Breakers spécifiques configurés pour chaque provider bancaire (+ Tink GRATUIT)");
     }
 
     /**
@@ -207,7 +216,7 @@ public class BankingResilienceConfig {
     private void configureProviderRateLimiters(RateLimiterRegistry registry) {
         // Budget Insight - Limite généreuse (API enterprise)
         RateLimiterConfig budgetInsightConfig = RateLimiterConfig.custom()
-                .limitForPeriod(100) // 100 req/min
+                .limitForPeriod(100)
                 .limitRefreshPeriod(Duration.ofMinutes(1))
                 .timeoutDuration(Duration.ofSeconds(3))
                 .build();
@@ -215,7 +224,7 @@ public class BankingResilienceConfig {
 
         // Bridge API - Limite modérée
         RateLimiterConfig bridgeConfig = RateLimiterConfig.custom()
-                .limitForPeriod(75) // 75 req/min
+                .limitForPeriod(75)
                 .limitRefreshPeriod(Duration.ofMinutes(1))
                 .timeoutDuration(Duration.ofSeconds(5))
                 .build();
@@ -223,21 +232,21 @@ public class BankingResilienceConfig {
 
         // Linxo - Limite conservatrice
         RateLimiterConfig linxoConfig = RateLimiterConfig.custom()
-                .limitForPeriod(30) // 30 req/min (plus strict)
+                .limitForPeriod(30)
                 .limitRefreshPeriod(Duration.ofMinutes(1))
                 .timeoutDuration(Duration.ofSeconds(8))
                 .build();
         registry.rateLimiter("linxo", linxoConfig);
 
-        // Tink - Limite freemium
+        // ✅ TINK - Limite généreuse (API gratuite mais stable)
         RateLimiterConfig tinkConfig = RateLimiterConfig.custom()
-                .limitForPeriod(20) // 20 req/min (freemium)
+                .limitForPeriod(60) // 60 req/min (plus que Linxo)
                 .limitRefreshPeriod(Duration.ofMinutes(1))
-                .timeoutDuration(Duration.ofSeconds(10))
+                .timeoutDuration(Duration.ofSeconds(5))
                 .build();
         registry.rateLimiter("tink", tinkConfig);
 
-        log.info("🚦 Rate Limiters spécifiques configurés pour chaque provider bancaire");
+        log.info("🚦 Rate Limiters spécifiques configurés pour chaque provider bancaire (+ Tink GRATUIT)");
     }
 
     /**
@@ -261,5 +270,15 @@ public class BankingResilienceConfig {
     @Bean("bankingRateLimiter")
     public RateLimiter bankingRateLimiter(RateLimiterRegistry registry) {
         return registry.rateLimiter("banking");
+    }
+
+    @Bean("tinkCircuitBreaker")
+    public CircuitBreaker tinkCircuitBreaker(CircuitBreakerRegistry registry) {
+        return registry.circuitBreaker("tink");
+    }
+
+    @Bean("tinkRateLimiter")
+    public RateLimiter tinkRateLimiter(RateLimiterRegistry registry) {
+        return registry.rateLimiter("tink");
     }
 }

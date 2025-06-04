@@ -38,6 +38,7 @@ public class BankAggregationService {
     private final CircuitBreakerRegistry circuitBreakerRegistry;
     private final RetryRegistry retryRegistry;
     private final RateLimiterRegistry rateLimiterRegistry;
+    private final TinkService tinkService;
 
     @Value("${banking.default-provider:budget-insight}")
     private String defaultProvider;
@@ -85,10 +86,10 @@ public class BankAggregationService {
                         "Solution Crédit Agricole certifiée ISO 27001. Combine PSD2 et screen scraping.",
                         checkProviderHealth("linxo")),
 
-                createProviderDto("tink", "Tink (ex-Nordigen)",
+                createProviderDto("tink", "Tink (ex-Nordigen) - GRATUIT",
                         "/images/providers/tink.png",
-                        "Modèle freemium attractif avec 2500+ institutions européennes. Idéal pour startups.",
-                        false), // Tink non implémenté pour l'instant
+                        "🎉 GRATUIT : 100 connexions/mois ! 2500+ banques européennes. PSD2 natif. Parfait pour débuter et faire des démos.",
+                        checkProviderHealth("tink")),
 
                 createProviderDto("mock", "Mock Provider",
                         "/images/providers/mock.png",
@@ -105,6 +106,7 @@ public class BankAggregationService {
 
         return executeWithResilience(provider, "initiate", () -> {
             return switch (provider.toLowerCase()) {
+                case "tink", "nordigen" -> tinkService.initiateConnection(credentials); // ✅ NOUVEAU
                 case "budget-insight", "bi", "powens" -> budgetInsightService.initiateConnection(credentials);
                 case "bridge", "bridge-api" -> bridgeApiService.initiateConnection(credentials);
                 case "linxo", "linxo-connect" -> linxoService.initiateConnection(credentials);
@@ -113,6 +115,7 @@ public class BankAggregationService {
             };
         });
     }
+
 
     /**
      * Confirme une connexion bancaire avec résilience
@@ -123,6 +126,7 @@ public class BankAggregationService {
 
         return executeWithResilience(provider, "confirm", () -> {
             return switch (provider.toLowerCase()) {
+                case "tink", "nordigen" -> tinkService.confirmConnection(connectionId, confirmationCode); // ✅ NOUVEAU
                 case "budget-insight", "bi", "powens" -> budgetInsightService.confirmConnection(connectionId, confirmationCode);
                 case "bridge", "bridge-api" -> bridgeApiService.confirmConnection(connectionId, confirmationCode);
                 case "linxo", "linxo-connect" -> linxoService.confirmConnection(connectionId, confirmationCode);
@@ -131,6 +135,7 @@ public class BankAggregationService {
             };
         });
     }
+
 
     /**
      * Récupère les comptes bancaires avec résilience
@@ -141,6 +146,7 @@ public class BankAggregationService {
 
         return executeWithResilience(provider, "accounts", () -> {
             return switch (provider.toLowerCase()) {
+                case "tink", "nordigen" -> tinkService.getAccounts(connectionId); // ✅ NOUVEAU
                 case "budget-insight", "bi", "powens" -> budgetInsightService.getAccounts(connectionId);
                 case "bridge", "bridge-api" -> bridgeApiService.getAccounts(connectionId);
                 case "linxo", "linxo-connect" -> linxoService.getAccounts(connectionId);
@@ -153,6 +159,7 @@ public class BankAggregationService {
         });
     }
 
+
     /**
      * Récupère les transactions avec résilience
      */
@@ -162,6 +169,7 @@ public class BankAggregationService {
 
         return executeWithResilience(provider, "transactions", () -> {
             return switch (provider.toLowerCase()) {
+                case "tink", "nordigen" -> tinkService.getTransactions(connectionId, accountId, days); // ✅ NOUVEAU
                 case "budget-insight", "bi", "powens" -> budgetInsightService.getTransactions(connectionId, accountId, days);
                 case "bridge", "bridge-api" -> bridgeApiService.getTransactions(connectionId, accountId, days);
                 case "linxo", "linxo-connect" -> linxoService.getTransactions(connectionId, accountId, days);
@@ -183,6 +191,7 @@ public class BankAggregationService {
         try {
             return executeWithResilience(provider, "health", () -> {
                 return switch (provider.toLowerCase()) {
+                    case "tink", "nordigen" -> tinkService.checkHealth(connectionId); // ✅ NOUVEAU
                     case "budget-insight", "bi", "powens" -> budgetInsightService.checkHealth(connectionId);
                     case "bridge", "bridge-api" -> bridgeApiService.checkHealth(connectionId);
                     case "linxo", "linxo-connect" -> linxoService.checkHealth(connectionId);
@@ -206,6 +215,7 @@ public class BankAggregationService {
         try {
             executeWithResilience(provider, "revoke", () -> {
                 return switch (provider.toLowerCase()) {
+                    case "tink", "nordigen" -> tinkService.revokeConnection(connectionId); // ✅ NOUVEAU
                     case "budget-insight", "bi", "powens" -> budgetInsightService.revokeConnection(connectionId);
                     case "bridge", "bridge-api" -> bridgeApiService.revokeConnection(connectionId);
                     case "linxo", "linxo-connect" -> linxoService.revokeConnection(connectionId);
@@ -261,6 +271,7 @@ public class BankAggregationService {
     private boolean checkProviderHealth(String provider) {
         try {
             return switch (provider.toLowerCase()) {
+                case "tink" -> tinkService.checkHealth("health-check"); // ✅ NOUVEAU
                 case "budget-insight" -> budgetInsightService.checkHealth("health-check");
                 case "bridge-api" -> bridgeApiService.checkHealth("health-check");
                 case "linxo" -> linxoService.checkHealth("health-check");
@@ -278,17 +289,16 @@ public class BankAggregationService {
      * Détermine le provider depuis l'ID de connexion
      */
     private String determineProviderFromConnectionId(String connectionId) {
+        if (connectionId.startsWith("tink_")) return "tink"; // ✅ NOUVEAU
         if (connectionId.startsWith("bi_")) return "budget-insight";
         if (connectionId.startsWith("bridge_")) return "bridge-api";
         if (connectionId.startsWith("linxo_")) return "linxo";
-        if (connectionId.startsWith("tink_")) return "tink";
         if (connectionId.startsWith("mock_")) return "mock";
 
-        // Fallback sur le provider par défaut
-        log.warn("⚠️ Format de connectionId non reconnu: {}, utilisation du provider par défaut", connectionId);
-        return defaultProvider;
+        // Fallback sur Tink (gratuit) au lieu de budget-insight
+        log.warn("⚠️ Format de connectionId non reconnu: {}, utilisation de Tink (gratuit)", connectionId);
+        return "tink"; // ✅ CHANGÉ : Tink comme fallback
     }
-
     /**
      * Crée un DTO de provider avec informations complètes
      */

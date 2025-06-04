@@ -1,214 +1,514 @@
-# Mosaïque Capital - Backend API
+# 🏛️ Mosaïque Capital - Plateforme de Gestion Patrimoniale
 
-## 🏛️ Description du projet
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
+[![Redis](https://img.shields.io/badge/Redis-7.2-red.svg)](https://redis.io/)
+[![License](https://img.shields.io/badge/License-Private-yellow.svg)]()
 
-Mosaïque Capital est une plateforme de gestion patrimoniale complète qui permet aux utilisateurs de suivre, gérer et optimiser leur patrimoine financier. Le système couvre les actifs de différentes natures (immobilier, placements financiers, cryptomonnaies, etc.) et offre des outils d'analyse et de reporting avancés.
+## 📋 Description du Projet
 
-Ce repository contient la partie backend sous forme d'API REST développée avec Spring Boot, incluant un système d'authentification à deux facteurs (MFA) complet et sécurisé.
+**Mosaïque Capital** est une plateforme complète de gestion patrimoniale qui permet aux utilisateurs de suivre, gérer et optimiser leur patrimoine financier. Le système couvre tous types d'actifs (immobilier, placements financiers, cryptomonnaies, liquidités) et offre des outils d'analyse avancés avec **intégration bancaire automatisée**.
 
-## 🏗️ Architecture du projet
+### 🎯 Fonctionnalités Principales
+
+#### 🔐 **Authentification & Sécurité**
+- **Authentification JWT** avec refresh tokens
+- **MFA (TOTP)** compatible Google Authenticator
+- **Blacklist des tokens** avec Redis
+- **Audit logs** complets
+- **Chiffrement** des données sensibles
+
+#### 🏦 **Intégration Bancaire**
+- **Agrégation multi-providers** : Budget Insight, Bridge API, Linxo
+- **Synchronisation automatique** des comptes et transactions
+- **Catégorisation intelligente** des transactions
+- **Webhooks sécurisés** pour mises à jour temps réel
+- **Patterns de résilience** (Circuit Breaker, Retry, Rate Limiter)
+
+#### 💰 **Gestion Patrimoniale**
+- **Suivi d'actifs** multi-catégories
+- **Valorisations historiques** avec graphiques
+- **Analyse de portefeuille** avec répartition
+- **Calcul patrimoine net** automatisé
+
+#### 📊 **Analytics & Reporting**
+- **Statistiques** revenus vs dépenses
+- **Analyse par catégorie** de transactions
+- **Alertes** de seuils budgétaires
+- **Exports** et rapports PDF
+
+---
+
+## 🏗️ Architecture Technique
+
+### Stack Technologique
+
+| Composant | Technologie | Version | Rôle |
+|-----------|-------------|---------|------|
+| **Backend** | Spring Boot | 3.4.5 | API REST principale |
+| **Sécurité** | Spring Security + JWT | 6.x | Authentification/Autorisation |
+| **Base de données** | MySQL | 8.0 | Stockage principal |
+| **Cache** | Redis | 7.2 | Sessions/Tokens/Rate limiting |
+| **Build** | Maven | 3.8+ | Gestion des dépendances |
+| **Conteneurisation** | Docker + Docker Compose | - | Déploiement |
+
+### Architecture Microservice-Ready
 
 ```
-com.master.mosaique_capital
-├── config             // Configurations Spring (sécurité, Redis, etc.)
-│   ├── SecurityConfig.java
-│   └── RedisConfig.java
-├── controller         // Contrôleurs REST 
-│   ├── AssetController.java
-│   ├── AssetValuationController.java
-│   ├── AuthController.java
-│   ├── MfaController.java           # 🆕 Gestion MFA
-│   └── PortfolioController.java
-├── dto                // Objets de transfert de données
-│   ├── asset/
-│   ├── auth/
-│   └── mfa/                         # 🆕 DTOs MFA
-│       ├── MfaSetupResponse.java
-│       ├── MfaVerificationRequest.java
-│       ├── MfaDisableRequest.java
-│       └── MfaStatusResponse.java
-├── entity             // Entités JPA
-├── service            // Services métier
-│   ├── auth/
-│   │   ├── AuthService.java
-│   │   ├── TokenBlacklistService.java  # 🆕 Gestion blacklist tokens
-│   │   └── UserDetailsServiceImpl.java
-│   └── mfa/                            # 🆕 Services MFA
-│       ├── MfaService.java
-│       └── QrCodeService.java
-├── security           // Implémentation JWT et sécurité
-└── util               // Classes utilitaires
+┌─────────────────────────────────────────────────────────────┐
+│                    🌐 API Gateway (Future)                  │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────┐
+│                 🏛️ Mosaïque Capital API                    │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────────┐│
+│  │    Auth     │ │   Assets    │ │         Banking         ││
+│  │   Service   │ │   Service   │ │         Services        ││
+│  └─────────────┘ └─────────────┘ └─────────────────────────┘│
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────┐
+│  📊 Data Layer: MySQL + Redis + External Banking APIs     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## 🛠️ Technologies utilisées
+---
 
-- **Java 21**
-- **Spring Boot 3.4.5**
-- **Spring Security 6** avec JWT
-- **Spring Data JPA**
-- **MySQL 8**
-- **Redis** (pour blacklist des tokens)
-- **Lombok**
-- **MapStruct**
-- **ZXing** (génération QR codes)
-- **TOTP** (authentification 2 facteurs)
-- **Validation API**
-
-## 🚀 Installation et configuration
+## 🚀 Installation et Configuration
 
 ### 1. Prérequis
 
-- **JDK 21**
-- **MySQL 8.x**
-- **Redis 6+** (recommandé pour la production)
-- **Maven 3.8+**
+```bash
+# Versions requises
+Java 21+
+Maven 3.8+
+Docker & Docker Compose
+MySQL 8.0+ (ou via Docker)
+Redis 7.0+ (ou via Docker)
+```
 
-### 2. Variables d'environnement essentielles
-
-| Variable | Description | Exemple |
-|----------|-------------|---------|
-| `JWT_SECRET` | 🔑 Secret pour signer les tokens JWT | `VotreSecretTresSecurise...` |
-| `DATABASE_PASSWORD` | 🗄️ Mot de passe base de données | `MotDePasseSecurise123!` |
-| `REDIS_PASSWORD` | 🔴 Mot de passe Redis | `RedisPassword123!` |
-| `SPRING_PROFILES_ACTIVE` | 🎯 Profil Spring actif | `dev` / `prod` |
-
-### 3. Compilation et exécution
+### 2. Clone et Configuration
 
 ```bash
-# Compilation
-mvn clean install
+# Cloner le repository
+git clone <repository-url>
+cd mosaique-capital
 
-# Lancement en développement
-mvn spring-boot:run
+# Copier le fichier d'environnement
+cp .env.example .env
 
-# Ou avec profil spécifique
+# Éditer les variables d'environnement
+nano .env
+```
+
+### 3. Variables d'Environnement Critiques
+
+```bash
+# Base de données
+DATABASE_USERNAME=mosaique_user
+DATABASE_PASSWORD=your_secure_password_here
+DATABASE_PORT=3307
+
+# Redis
+REDIS_PASSWORD=your_redis_password_here
+REDIS_PORT=6380
+
+# JWT (CRITIQUE - Générer avec: openssl rand -base64 64)
+JWT_SECRET=your_very_long_and_secure_jwt_secret_key_here
+
+# Banking API Credentials
+APP_BANKING_BUDGET_INSIGHT_CLIENT_ID=your_bi_client_id
+APP_BANKING_BUDGET_INSIGHT_CLIENT_SECRET=your_bi_secret
+APP_BANKING_BUDGET_INSIGHT_WEBHOOK_SECRET=your_webhook_secret
+
+# Application
+SERVER_PORT=9999
+SPRING_PROFILES_ACTIVE=dev
+```
+
+### 4. Démarrage avec Docker
+
+```bash
+# Démarrage de l'environnement complet
+docker-compose up -d
+
+# Vérification des logs
+docker-compose logs -f app
+
+# Santé des services
+curl http://localhost:9999/actuator/health
+```
+
+### 5. Démarrage en Développement
+
+```bash
+# Démarrer seulement MySQL et Redis
+docker-compose up -d mysql redis
+
+# Lancer l'application en mode dev
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-## 🔐 APIs d'authentification
+---
 
-### Gestion des comptes
+## 📚 Documentation API Complète
 
-| Endpoint | Méthode | Description |
-|----------|---------|-------------|
-| `/api/auth/signup` | POST | Création d'un compte utilisateur |
-| `/api/auth/login` | POST | Connexion (avec MFA optionnel) |
-| `/api/auth/refresh` | POST | Rafraîchissement du token |
-| `/api/auth/logout` | POST | Déconnexion et invalidation token |
-| `/api/auth/me` | GET | Informations utilisateur connecté |
+### 🔐 **Authentification** (`/api/auth/*`)
 
-### Authentification à deux facteurs (MFA) 🔐
+| Endpoint | Méthode | Description | Body |
+|----------|---------|-------------|------|
+| `/api/auth/signup` | POST | Création compte utilisateur | `SignupRequest` |
+| `/api/auth/login` | POST | Connexion (avec MFA optionnel) | `LoginRequest` |
+| `/api/auth/refresh` | POST | Rafraîchissement token | `{refreshToken}` |
+| `/api/auth/logout` | POST | Déconnexion et invalidation | - |
+| `/api/auth/me` | GET | Informations utilisateur | - |
 
-| Endpoint | Méthode | Description |
-|----------|---------|-------------|
-| `/api/mfa/setup` | POST | Configuration initiale MFA |
-| `/api/mfa/qrcode` | GET | Téléchargement QR code (PNG) |
-| `/api/mfa/verify` | POST | Activation MFA après scan |
-| `/api/mfa/status` | GET | Statut MFA de l'utilisateur |
-| `/api/mfa/validate` | POST | Validation d'un code TOTP |
-| `/api/mfa/disable` | POST | Désactivation MFA |
-| `/api/mfa/regenerate` | POST | Régénération du secret |
+### 🔒 **MFA/2FA** (`/api/mfa/*`)
 
-## 🏦 APIs de gestion patrimoniale
+| Endpoint | Méthode | Description | Sécurité |
+|----------|---------|-------------|----------|
+| `/api/mfa/setup` | POST | Configuration initiale MFA | 🔑 USER |
+| `/api/mfa/qrcode` | GET | QR code PNG pour setup | 🔑 USER |
+| `/api/mfa/verify` | POST | Activation après scan QR | 🔑 USER |
+| `/api/mfa/status` | GET | Statut MFA utilisateur | 🔑 USER |
+| `/api/mfa/validate` | POST | Validation code TOTP | 🔑 USER |
+| `/api/mfa/disable` | POST | Désactivation MFA | 🔑 USER |
+| `/api/mfa/regenerate` | POST | Nouveau secret MFA | 🔑 USER |
 
-### Gestion des actifs
+### 💎 **Gestion d'Actifs** (`/api/assets/*`)
 
-| Endpoint | Méthode | Description |
-|----------|---------|-------------|
-| `/api/assets` | GET | Liste des actifs de l'utilisateur |
-| `/api/assets/{id}` | GET | Détails d'un actif |
-| `/api/assets/type/{type}` | GET | Actifs par type |
-| `/api/assets` | POST | Création d'un actif |
-| `/api/assets/{id}` | PUT | Mise à jour d'un actif |
-| `/api/assets/{id}` | DELETE | Suppression d'un actif |
+| Endpoint | Méthode | Description | Fonctionnalité |
+|----------|---------|-------------|----------------|
+| `/api/assets` | GET | Liste actifs utilisateur | Pagination |
+| `/api/assets/{id}` | GET | Détails actif spécifique | Ownership check |
+| `/api/assets/type/{type}` | GET | Actifs par type | `?includeSubTypes=true` |
+| `/api/assets` | POST | Création nouvel actif | Validation |
+| `/api/assets/{id}` | PUT | Mise à jour actif | Ownership check |
+| `/api/assets/{id}` | DELETE | Suppression actif | Ownership check |
 
-### Valorisations
+### 📈 **Valorisations** (`/api/valuations/*`)
 
-| Endpoint | Méthode | Description |
-|----------|---------|-------------|
-| `/api/valuations/asset/{assetId}` | GET | Historique des valorisations |
-| `/api/valuations/asset/{assetId}/range` | GET | Valorisations par période |
-| `/api/valuations/{id}` | GET | Détails d'une valorisation |
-| `/api/valuations` | POST | Ajout d'une valorisation |
-| `/api/valuations/{id}` | DELETE | Suppression d'une valorisation |
+| Endpoint | Méthode | Description | Paramètres |
+|----------|---------|-------------|------------|
+| `/api/valuations/asset/{assetId}` | GET | Historique valorisations | - |
+| `/api/valuations/asset/{assetId}/range` | GET | Valorisations période | `startDate`, `endDate` |
+| `/api/valuations/{id}` | GET | Détails valorisation | - |
+| `/api/valuations` | POST | Ajout valorisation | Auto-update current value |
+| `/api/valuations/{id}` | DELETE | Suppression valorisation | - |
 
-### Analyse de portefeuille
+### 📊 **Portfolio** (`/api/portfolio/*`)
 
-| Endpoint | Méthode | Description |
-|----------|---------|-------------|
-| `/api/portfolio/summary` | GET | Résumé du patrimoine |
-| `/api/portfolio/distribution` | GET | Répartition par catégorie |
+| Endpoint | Méthode | Description | Retour |
+|----------|---------|-------------|--------|
+| `/api/portfolio/summary` | GET | Résumé patrimoine global | Total, répartition |
+| `/api/portfolio/distribution` | GET | Répartition par catégorie | Graphiques ready |
 
-### Tests avec collection Postman
+---
 
-Une collection Postman complète est disponible dans `docs/Mosaïque Capital API - Tests Complets.postman_collection.json` avec :
+## 🏦 **APIs Banking** *(NOUVELLES FONCTIONNALITÉS)*
 
-- ✅ **Tests automatisés** de tous les endpoints
-- ✅ **Variables dynamiques** pour les tokens
-- ✅ **Scénarios complets** MFA
-- ✅ **Tests d'erreur** et de sécurité
+### 🔗 **Connexions Bancaires** (`/api/banking/connections/*`)
 
-## 🔒 Sécurité et bonnes pratiques
+| Endpoint | Méthode | Description | Provider Support |
+|----------|---------|-------------|------------------|
+| `/api/banking/providers` | GET | Liste providers disponibles | Budget Insight, Bridge, Linxo |
+| `/api/banking/connections` | GET | Connexions utilisateur | Avec statuts temps réel |
+| `/api/banking/connections/{id}` | GET | Détails connexion | Health check |
+| `/api/banking/connections` | POST | Nouvelle connexion bancaire | Multi-provider |
+| `/api/banking/connections/{id}/confirm` | POST | Confirmation authentification forte | SCA handling |
+| `/api/banking/connections/{id}/sync` | POST | Synchronisation manuelle | Force refresh |
+| `/api/banking/connections/sync-all` | POST | Sync toutes connexions | Batch processing |
+| `/api/banking/connections/{id}/health` | GET | État santé connexion | Real-time status |
+| `/api/banking/connections/{id}` | DELETE | Suppression connexion | Cascade delete |
 
-### Fonctionnalités de sécurité
+### 💳 **Comptes Bancaires** (`/api/banking/accounts/*`)
 
-- 🔐 **JWT avec blacklist** (invalidation côté serveur)
-- 🔑 **MFA TOTP** (compatible Google Authenticator)
-- 🛡️ **QR codes générés côté serveur** (sécurisé)
-- 🚫 **Protection CSRF** et headers sécurisés
-- 📝 **Logs d'audit** détaillés
-- 🔄 **Rotation automatique** des tokens
+| Endpoint | Méthode | Description | Fonctionnalité |
+|----------|---------|-------------|----------------|
+| `/api/banking/accounts` | GET | Tous comptes utilisateur | Multi-banques |
+| `/api/banking/accounts/{id}` | GET | Détails compte spécifique | Solde temps réel |
+| `/api/banking/connections/{connectionId}/accounts` | GET | Comptes d'une connexion | Par provider |
+| `/api/banking/summary` | GET | Résumé financier global | Assets/Liabilities |
 
-### Checklist de déploiement
+### 💰 **Transactions** (`/api/banking/transactions/*`)
 
-- [ ] ✅ **Secrets générés** avec `generate-secrets.sh`
-- [ ] ✅ **Base de données** configurée et sécurisée
-- [ ] ✅ **Redis** configuré pour la production
-- [ ] ✅ **SSL/HTTPS** activé
-- [ ] ✅ **Logs** configurés et monitored
-- [ ] ✅ **Backup** base de données planifié
-- [ ] ✅ **Monitoring** (Actuator + Prometheus)
+| Endpoint | Méthode | Description | Fonctionnalités |
+|----------|---------|-------------|-----------------|
+| `/api/banking/transactions/search` | POST | Recherche avancée | Filtres multiples |
+| `/api/banking/accounts/{accountId}/transactions` | GET | Transactions d'un compte | Pagination |
+| `/api/banking/transactions/{id}` | GET | Détails transaction | - |
+| `/api/banking/transactions/{id}/category` | PATCH | Mise à jour catégorie | Catégorisation manuelle |
+| `/api/banking/transactions/statistics/categories` | GET | Stats par catégorie | Période configurable |
+| `/api/banking/transactions/statistics/cash-flow` | GET | Analyse revenus/dépenses | Taux d'épargne |
 
-## 📊 Monitoring et observabilité
+### 🔔 **Webhooks Banking** (`/api/banking/webhooks/*`)
 
-### Endpoints Actuator
+| Endpoint | Méthode | Description | Sécurité |
+|----------|---------|-------------|----------|
+| `/api/banking/webhooks/budget-insight` | POST | Webhook Budget Insight | HMAC-SHA256 |
+| `/api/banking/webhooks/linxo` | POST | Webhook Linxo | Signature vérifiée |
+| `/api/banking/webhooks/health` | GET | Test connectivité | Public |
 
-| Endpoint | Description |
-|----------|-------------|
-| `/actuator/health` | État de santé de l'application |
-| `/actuator/info` | Informations sur l'application |
-| `/actuator/prometheus` | Métriques pour Prometheus |
+### 📋 **Monitoring Banking** (`/api/banking/status`)
 
-### Métriques clés
+| Endpoint | Méthode | Description | Métriques |
+|----------|---------|-------------|-----------|
+| `/api/banking/status` | GET | Statut global banking | Connexions, comptes, dernière sync |
 
-- 📈 **Taux de réussite** de l'authentification
-- 🔐 **Utilisation MFA** (activation, validation)
-- ⚡ **Performance** des endpoints
-- 🗄️ **Connexions** base de données et Redis
-- 💾 **Utilisation mémoire** et CPU
+---
 
-## 🔄 Roadmap et évolutions
+## 🔧 Fonctionnalités Avancées
 
-### Version actuelle (v1.0)
+### 🛡️ **Patterns de Résilience Banking**
 
-- ✅ **Authentification JWT** complète
-- ✅ **MFA TOTP** avec QR codes
-- ✅ **Gestion d'actifs** basique
-- ✅ **API RESTful** documentée
+```yaml
+# Circuit Breaker par Provider
+Budget Insight: 60% failure rate, 45s timeout
+Bridge API: 50% failure rate, 30s timeout  
+Linxo: 40% failure rate, 60s timeout
 
-### Prochaines versions
+# Rate Limiting par Provider
+Budget Insight: 100 req/min
+Bridge API: 75 req/min
+Linxo: 30 req/min
 
-#### v1.1 - Intégrations financières
-- 🏦 **Budget Insight** pour agrégation bancaire
-- 📊 **APIs de cotations** en temps réel
-- 💰 **Support cryptomonnaies**
+# Retry avec Backoff Exponentiel
+Max attempts: 3
+Backoff: 1s, 2s, 4s
+```
 
-#### v1.2 - Analyse avancée
-- 📈 **Moteur d'analyse patrimoniale**
-- 🎯 **Recommandations personnalisées**
-- 📋 **Rapports PDF automatisés**
+### 🔄 **Synchronisation Automatique**
 
-#### v1.3 - Fonctionnalités avancées
-- 💸 **Moteur fiscal** français
-- 👥 **Gestion multi-comptes** (famille)
-- 🤖 **Intelligence artificielle**
+```yaml
+# Scheduling
+Sync automatique: Toutes les 6h
+Nettoyage: Quotidien à 2h
+Rapport santé: Lundi 9h
+
+# Batch Processing
+Max connexions/batch: 5
+Pause entre batches: 2s
+Timeout par connexion: 60s
+```
+
+### 🎯 **Catégorisation Intelligente**
+
+```yaml
+Catégories supportées:
+- Alimentation (Monoprix, Carrefour...)
+- Transport (SNCF, RATP, Uber...)
+- Shopping (Amazon, Fnac...)
+- Santé (Pharmacie, Médecin...)
+- Logement (Loyer, EDF, Internet...)
+- Loisirs (Netflix, Spotify...)
+```
+
+---
+
+## 📊 Monitoring et Observabilité
+
+### 🏥 **Health Checks**
+
+```bash
+# Application principale
+curl http://localhost:9999/actuator/health
+
+# Détails des composants
+curl http://localhost:9999/actuator/health/db
+curl http://localhost:9999/actuator/health/redis
+
+# Métriques Prometheus
+curl http://localhost:9999/actuator/prometheus
+```
+
+### 📈 **Métriques Clés**
+
+| Métrique | Description | Seuil Critique |
+|----------|-------------|----------------|
+| `banking.connections.active` | Connexions bancaires actives | < 90% |
+| `auth.mfa.usage_rate` | Taux d'adoption MFA | < 40% |
+| `jwt.tokens.blacklisted` | Tokens révoqués | > 1000/h |
+| `banking.sync.success_rate` | Succès synchronisation | < 95% |
+| `api.response_time` | Temps de réponse moyen | > 2s |
+
+### 📝 **Logs Structurés**
+
+```json
+{
+  "timestamp": "2025-01-15T10:30:00Z",
+  "level": "INFO",
+  "service": "banking",
+  "event": "connection_sync",
+  "user_id": "12345",
+  "connection_id": "bi_67890",
+  "provider": "budget-insight",
+  "accounts_synced": 3,
+  "transactions_synced": 45,
+  "duration_ms": 2150
+}
+```
+
+---
+
+## 🔒 Sécurité et Conformité
+
+### 🛡️ **Mesures de Sécurité**
+
+#### **Authentification**
+- JWT avec signature HMAC-SHA256
+- Refresh tokens rotatifs
+- Blacklist temps réel avec Redis
+- MFA TOTP (RFC 6238)
+
+#### **Banking APIs**
+- Webhooks signés (HMAC-SHA256)
+- TLS 1.3 obligatoire
+- Rate limiting par IP/utilisateur
+- Audit trails complets
+
+#### **Données Sensibles**
+- Mots de passe hachés (BCrypt)
+- Secrets MFA chiffrés
+- Logs masqués (PII/credentials)
+- Tokens expiration courte (15min)
+
+### 📋 **Conformité**
+
+| Standard | Statut | Description |
+|----------|--------|-------------|
+| **PSD2** | ✅ | Intégration APIs régulées |
+| **RGPD** | ✅ | Audit logs, masquage données |
+| **PCI DSS** | 🔄 | En cours (pas de cartes stockées) |
+| **ISO 27001** | 📋 | Framework sécurité |
+
+---
+
+## 🚦 Environnements et Déploiement
+
+### 🏗️ **Profils Spring**
+
+```yaml
+# Développement
+spring.profiles.active=dev
+- H2 en mémoire optionnel
+- Logs debug activés
+- Hot reload activé
+- Banking en mode sandbox
+
+# Test
+spring.profiles.active=test  
+- Base test dédiée
+- Mocks banking providers
+- Données factices
+- Tests d'intégration
+
+# Production
+spring.profiles.active=prod
+- MySQL cluster
+- Redis cluster
+- Banking APIs réelles
+- Monitoring complet
+```
+
+### 🐳 **Docker Production**
+
+```bash
+# Build optimisé
+docker build -t mosaique-capital:latest .
+
+# Déploiement avec secrets
+docker-compose -f docker-compose.prod.yml up -d
+
+# Scaling horizontal
+docker-compose up -d --scale app=3
+```
+
+---
+
+
+## 🛠️ Développement et Contribution
+
+### 🏗️ **Structure du Projet**
+
+```
+src/main/java/com/master/mosaique_capital/
+├── config/               # Configuration Spring
+│   ├── SecurityConfig.java
+│   ├── BankingConfig.java
+│   └── BankingResilienceConfig.java
+├── controller/           # Contrôleurs REST
+│   ├── AuthController.java
+│   ├── MfaController.java
+│   ├── AssetController.java
+│   └── BankingController.java      # NOUVEAU
+├── service/              # Logique métier
+│   ├── auth/
+│   ├── banking/                    # NOUVEAU
+│   │   ├── BankConnectionService.java
+│   │   ├── BankAccountSyncService.java
+│   │   └── external/
+│   └── mfa/
+├── entity/               # Entités JPA
+├── dto/                  # Data Transfer Objects
+│   ├── auth/
+│   ├── banking/                    # NOUVEAU
+│   └── mfa/
+├── repository/           # Repositories JPA
+├── security/             # Sécurité JWT
+├── mapper/               # MapStruct mappers
+└── exception/            # Gestion d'erreurs
+```
+
+
+### 📝 **Conventions**
+
+- **Branches** : `feature/banking-integration`, `hotfix/security-patch`
+- **Commits** : `feat(banking): add Budget Insight integration`
+- **PR Reviews** : Obligatoire, 2 approbations minimum
+- **Documentation** : Swagger + README à jour
+
+---
+
+## 🗺️ Roadmap
+
+### Version Actuelle (v1.0) ✅
+- ✅ Authentification JWT + MFA
+- ✅ Gestion d'actifs patrimoniaux
+- ✅ **Intégration bancaire multi-providers**
+- ✅ **Synchronisation automatique**
+- ✅ **Patterns de résilience**
+
+### v1.1 - Amélioration Banking 🚧
+- 🔄 Support Tink/Nordigen
+- 🔄 Agrégation cryptomonnaies
+- 🔄 Alertes temps réel
+- 🔄 Export données (PDF/Excel)
+
+### v1.2 - Intelligence Artificielle 📋
+- 📋 Catégorisation IA
+- 📋 Prédictions dépenses
+- 📋 Conseils personnalisés
+- 📋 Détection fraude
+
+### v1.3 - Évolutions Avancées 🎯
+- 🎯 Moteur fiscal français
+- 🎯 Gestion multi-comptes famille
+- 🎯 API publique partenaires
+- 🎯 Mobile app native
+
+---
+
+## 📄 Licence et Mentions
+
+**© 2025 Mosaïque Capital - Tous droits réservés**
+
+### 🏛️ **Providers Bancaires**
+- **Budget Insight (Powens)** - Leader européen agrégation
+- **Bridge API** - Solution moderne haute performance
+- **Linxo Connect** - Plateforme Crédit Agricole
+
+### 🔧 **Technologies Open Source**
+- Spring Boot, Spring Security, Redis, MySQL
+- Resilience4j, MapStruct, Lombok
+- Docker, Maven, JUnit
