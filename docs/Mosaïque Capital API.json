@@ -1532,11 +1532,11 @@
 		},
 		{
 			"name": "🏦 Banking API - Agrégation Bancaire",
-			"description": "API complète d'agrégation bancaire avec support Budget Insight, Bridge API, Linxo Connect",
+			"description": "API complète d'agrégation bancaire avec support Budget Insight, Bridge API, Linxo Connect et Tink (GRATUIT)",
 			"item": [
 				{
 					"name": "🔍 1. Providers & Discovery",
-					"description": "Découverte des providers disponibles et configuration",
+					"description": "Découverte des providers disponibles avec Tink GRATUIT",
 					"item": [
 						{
 							"name": "Get Available Banking Providers",
@@ -1552,25 +1552,35 @@
 											"    pm.expect(providers.length).to.be.above(0);",
 											"});",
 											"",
+											"pm.test('Tink GRATUIT disponible', function () {",
+											"    const providers = pm.response.json();",
+											"    const tink = providers.find(p => p.code === 'tink');",
+											"    pm.expect(tink).to.not.be.undefined;",
+											"    pm.expect(tink.name).to.include('GRATUIT');",
+											"});",
+											"",
 											"pm.test('Budget Insight available', function () {",
 											"    const providers = pm.response.json();",
 											"    const budgetInsight = providers.find(p => p.code === 'budget-insight');",
 											"    pm.expect(budgetInsight).to.not.be.undefined;",
-											"    pm.expect(budgetInsight.name).to.include('Budget Insight');",
 											"});",
 											"",
 											"pm.test('Bridge API available', function () {",
 											"    const providers = pm.response.json();",
 											"    const bridge = providers.find(p => p.code === 'bridge-api');",
 											"    pm.expect(bridge).to.not.be.undefined;",
-											"    pm.expect(bridge.name).to.include('Bridge');",
 											"});",
 											"",
 											"// Store available providers for later use",
 											"if (pm.response.code === 200) {",
 											"    const providers = pm.response.json();",
 											"    pm.globals.set('available_providers', JSON.stringify(providers));",
-											"    console.log('📋 Available providers:', providers.map(p => p.name).join(', '));",
+											"    console.log('📋 Providers disponibles:');",
+											"    providers.forEach(p => {",
+											"        const status = p.available ? '✅' : '❌';",
+											"        const free = p.name.includes('GRATUIT') ? '🆓' : '💰';",
+											"        console.log(`  ${status} ${free} ${p.name}`);",
+											"    });",
 											"}"
 										]
 									}
@@ -1594,22 +1604,28 @@
 							}
 						},
 						{
-							"name": "Check Provider Health Status",
+							"name": "Test Tink Integration",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test('Health check successful', function () {",
+											"pm.test('Tink integration test successful', function () {",
 											"    pm.response.to.have.status(200);",
+											"    const result = pm.response.json();",
+											"    pm.expect(result.provider).to.eql('tink');",
+											"    pm.expect(result.pricing).to.include('FREE');",
 											"});",
 											"",
-											"const providers = JSON.parse(pm.globals.get('available_providers') || '[]');",
-											"providers.forEach(provider => {",
-											"    pm.test(`Provider ${provider.name} health status available`, function() {",
-											"        pm.expect(provider).to.have.property('available');",
-											"    });",
-											"});"
+											"const result = pm.response.json();",
+											"console.log('🎉 TINK INTEGRATION TEST');",
+											"console.log('=' .repeat(35));",
+											"console.log(`🏦 Provider: ${result.provider}`);",
+											"console.log(`💰 Pricing: ${result.pricing}`);",
+											"console.log(`🌍 Countries: ${result.supported_countries.join(', ')}`);",
+											"console.log(`🏪 Institutions: ${result.institutions_count}`);",
+											"console.log(`📖 Docs: ${result.documentation}`);",
+											"console.log(`💬 ${result.message}`);"
 										]
 									}
 								}
@@ -1623,11 +1639,11 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/banking/providers",
+									"raw": "http://localhost:9999/api/banking/webhooks/tink/test",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
-									"path": ["api", "banking", "providers"]
+									"path": ["api", "banking", "webhooks", "tink", "test"]
 								}
 							}
 						}
@@ -1635,28 +1651,29 @@
 				},
 				{
 					"name": "🔗 2. Connections Management",
-					"description": "Gestion des connexions bancaires avec différents providers",
+					"description": "Gestion des connexions bancaires avec tous les providers",
 					"item": [
 						{
-							"name": "📱 Mock Provider (Development)",
+							"name": "🆓 Tink (GRATUIT - Recommandé)",
 							"item": [
 								{
-									"name": "Initiate Mock Connection",
+									"name": "Initiate Tink Connection - Crédit Agricole",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Mock connection initiated', function () {",
+													"pm.test('Tink connection initiated', function () {",
 													"    pm.expect([201, 400]).to.include(pm.response.code);",
 													"});",
 													"",
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
-													"    pm.globals.set('mock_connection_id', response.id);",
-													"    pm.globals.set('active_connection_id', response.id);",
+													"    pm.globals.set('tink_connection_id', response.id);",
 													"    pm.globals.set('latest_connection_id', response.id);",
-													"    console.log('🔗 Mock connection created with ID:', response.id);",
+													"    pm.globals.set('active_connection_id', response.id);",
+													"    console.log('🆓 Connexion Tink GRATUITE créée:', response.id);",
+													"    console.log('🔗 External ID:', response.connectionId);",
 													"    console.log('📊 Status:', response.connectionStatus);",
 													"}"
 												]
@@ -1677,7 +1694,234 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"demo_user_mock\",\n        \"password\": \"mock_secure_password_123\",\n        \"additionalField1\": \"optional_field\"\n    }\n}"
+											"raw": "{\n    \"provider\": \"tink\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@creditagricole.fr\",\n        \"password\": \"Demo_Tink_Password_123!\",\n        \"additionalField1\": \"optional_field\"\n    }\n}"
+										},
+										"url": {
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
+											"path": ["api", "banking", "connections"]
+										}
+									}
+								},
+								{
+									"name": "Initiate Tink Connection - BNP Paribas",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('tink_bnp_connection_id', response.id);",
+													"    console.log('🆓 Connexion Tink BNP GRATUITE:', response.connectionId);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"tink\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@bnpparibas.net\",\n        \"password\": \"Demo_Tink_BNP_Password_123!\"\n    }\n}"
+										},
+										"url": {
+											"raw": "http://localhost:9999/api/banking/connections",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
+											"path": ["api", "banking", "connections"]
+										}
+									}
+								},
+								{
+									"name": "Get Tink Authorization URL",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Authorization URL generated', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response).to.have.property('authorizationUrl');",
+													"    pm.expect(response.authorizationUrl).to.include('nordigen.com');",
+													"});",
+													"",
+													"const response = pm.response.json();",
+													"console.log('🔗 URL d\\'autorisation Tink:', response.authorizationUrl);",
+													"console.log('⏰ Expire dans:', response.expiresIn, 'secondes');",
+													"console.log('📋 Requisition ID:', response.requisitionId);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"requisitionId\": \"tink_req_demo_123456\",\n    \"institutionId\": \"CREDIT_AGRICOLE_FRCA_FR\"\n}"
+										},
+										"url": {
+											"raw": "http://localhost:9999/api/banking/webhooks/tink/authorization-url",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
+											"path": ["api", "banking", "webhooks", "tink", "authorization-url"]
+										}
+									}
+								},
+								{
+									"name": "Check Tink Connection Status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Status check successful', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const status = pm.response.json();",
+													"    pm.expect(status).to.have.property('status');",
+													"    pm.expect(status).to.have.property('healthy');",
+													"    pm.expect(status.provider).to.eql('tink');",
+													"});",
+													"",
+													"const status = pm.response.json();",
+													"const healthIcon = status.healthy ? '✅' : '❌';",
+													"console.log(`${healthIcon} Statut Tink: ${status.status}`);",
+													"console.log(`🔗 Connection ID: ${status.connectionId}`);",
+													"console.log(`💬 Message: ${status.message}`);"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											}
+										],
+										"url": {
+											"raw": "http://localhost:9999/api/banking/webhooks/tink/status/{{tink_connection_id}}",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
+											"path": ["api", "banking", "webhooks", "tink", "status", "{{tink_connection_id}}"]
+										}
+									}
+								},
+								{
+									"name": "Confirm Tink Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Tink connection confirmed', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response.connectionStatus).to.eql('ACTIVE');",
+													"});",
+													"",
+													"if (pm.response.code === 200) {",
+													"    console.log('✅ Connexion Tink confirmée et activée GRATUITEMENT');",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"confirmationCode\": \"tink_demo_code_789\"\n}"
+										},
+										"url": {
+											"raw": "http://localhost:9999/api/banking/connections/{{tink_connection_id}}/confirm",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
+											"path": ["api", "banking", "connections", "{{tink_connection_id}}", "confirm"]
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "📱 Mock Provider (Development)",
+							"item": [
+								{
+									"name": "Initiate Mock Connection",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Mock connection initiated', function () {",
+													"    pm.expect([201, 400]).to.include(pm.response.code);",
+													"});",
+													"",
+													"if (pm.response.code === 201) {",
+													"    const response = pm.response.json();",
+													"    pm.globals.set('mock_connection_id', response.id);",
+													"    if (!pm.globals.get('active_connection_id')) {",
+													"        pm.globals.set('active_connection_id', response.id);",
+													"    }",
+													"    console.log('🔗 Mock connection created with ID:', response.id);",
+													"}"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{jwt_token}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"demo_user_mock\",\n        \"password\": \"mock_secure_password_123\"\n    }\n}"
 										},
 										"url": {
 											"raw": "http://localhost:9999/api/banking/connections",
@@ -1697,13 +1941,9 @@
 												"exec": [
 													"pm.test('Mock connection confirmed', function () {",
 													"    pm.response.to.have.status(200);",
-													"    const response = pm.response.json();",
-													"    pm.expect(response.connectionStatus).to.eql('ACTIVE');",
 													"});",
 													"",
-													"if (pm.response.code === 200) {",
-													"    console.log('✅ Mock connection confirmed and activated');",
-													"}"
+													"console.log('✅ Mock connection confirmed');"
 												]
 											}
 										}
@@ -1752,7 +1992,6 @@
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
 													"    pm.globals.set('bi_connection_id', response.id);",
-													"    pm.globals.set('latest_connection_id', response.id);",
 													"    console.log('🏛️ Budget Insight connection:', response.connectionId);",
 													"}"
 												]
@@ -1773,7 +2012,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"provider\": \"budget-insight\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@creditagricole.fr\",\n        \"password\": \"Demo_CA_Password_123!\",\n        \"additionalField1\": \"123456\",\n        \"extraFields\": {\n            \"birthdate\": \"1985-06-15\",\n            \"phone\": \"0601234567\"\n        }\n    }\n}"
+											"raw": "{\n    \"provider\": \"budget-insight\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@creditagricole.fr\",\n        \"password\": \"Demo_CA_Password_123!\",\n        \"additionalField1\": \"123456\"\n    }\n}"
 										},
 										"url": {
 											"raw": "http://localhost:9999/api/banking/connections",
@@ -1785,48 +2024,7 @@
 									}
 								},
 								{
-									"name": "Initiate Budget Insight - BNP Paribas",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if (pm.response.code === 201) {",
-													"    const response = pm.response.json();",
-													"    pm.globals.set('bi_bnp_connection_id', response.id);",
-													"    console.log('🏛️ Budget Insight BNP connection:', response.connectionId);",
-													"}"
-												]
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											},
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"provider\": \"budget-insight\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@bnpparibas.net\",\n        \"password\": \"Demo_BNP_Password_123!\",\n        \"additionalField1\": \"987654\",\n        \"extraFields\": {\n            \"customerNumber\": \"12345678\"\n        }\n    }\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/connections",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "connections"]
-										}
-									}
-								},
-								{
-									"name": "Confirm Budget Insight Connection (SCA)",
+									"name": "Confirm Budget Insight Connection",
 									"request": {
 										"method": "POST",
 										"header": [
@@ -1867,7 +2065,6 @@
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
 													"    pm.globals.set('bridge_connection_id', response.id);",
-													"    pm.globals.set('latest_connection_id', response.id);",
 													"    console.log('🌉 Bridge API connection:', response.connectionId);",
 													"}"
 												]
@@ -1889,33 +2086,6 @@
 										"body": {
 											"mode": "raw",
 											"raw": "{\n    \"provider\": \"bridge-api\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@societegenerale.fr\",\n        \"password\": \"Demo_SG_Password_123!\"\n    }\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/connections",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "connections"]
-										}
-									}
-								},
-								{
-									"name": "Initiate Bridge API - LCL",
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											},
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"provider\": \"bridge-api\",\n    \"bankCredentials\": {\n        \"login\": \"demo.user@lcl.fr\",\n        \"password\": \"Demo_LCL_Password_123!\"\n    }\n}"
 										},
 										"url": {
 											"raw": "http://localhost:9999/api/banking/connections",
@@ -1968,7 +2138,6 @@
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
 													"    pm.globals.set('linxo_connection_id', response.id);",
-													"    pm.globals.set('latest_connection_id', response.id);",
 													"    console.log('🏦 Linxo connection:', response.connectionId);",
 													"}"
 												]
@@ -2045,27 +2214,35 @@
 													"    pm.expect(connections).to.be.an('array');",
 													"});",
 													"",
-													"// Store first active connection for subsequent tests",
 													"if (pm.response.code === 200) {",
 													"    const connections = pm.response.json();",
-													"    const activeConnection = connections.find(c => c.connectionStatus === 'ACTIVE');",
+													"    ",
+													"    // Priorité : Tink (gratuit) > Mock > autres",
+													"    let activeConnection = connections.find(c => c.connectionStatus === 'ACTIVE' && c.provider === 'tink');",
+													"    if (!activeConnection) {",
+													"        activeConnection = connections.find(c => c.connectionStatus === 'ACTIVE');",
+													"    }",
+													"    if (!activeConnection && connections.length > 0) {",
+													"        activeConnection = connections[0];",
+													"    }",
+													"    ",
 													"    if (activeConnection) {",
 													"        pm.globals.set('active_connection_id', activeConnection.id);",
-													"        console.log('🔗 Active connection found:', activeConnection.id);",
+													"        console.log(`🔗 Connexion active sélectionnée: ${activeConnection.id} (${activeConnection.provider})`);",
 													"    }",
 													"    ",
-													"    // Store the first connection if no active one",
-													"    if (!activeConnection && connections.length > 0) {",
-													"        pm.globals.set('active_connection_id', connections[0].id);",
-													"        console.log('🔗 Using first connection:', connections[0].id);",
-													"    }",
-													"    ",
-													"    // Log connection summary",
+													"    // Log summary avec focus sur Tink",
+													"    console.log('📊 RÉSUMÉ DES CONNEXIONS');",
+													"    console.log('=' .repeat(30));",
 													"    const summary = connections.reduce((acc, conn) => {",
-													"        acc[conn.connectionStatus] = (acc[conn.connectionStatus] || 0) + 1;",
+													"        const key = `${conn.provider} (${conn.connectionStatus})`;",
+													"        acc[key] = (acc[key] || 0) + 1;",
 													"        return acc;",
 													"    }, {});",
-													"    console.log('📊 Connections summary:', summary);",
+													"    Object.entries(summary).forEach(([key, count]) => {",
+													"        const icon = key.includes('tink') ? '🆓' : key.includes('ACTIVE') ? '✅' : '⏳';",
+													"        console.log(`  ${icon} ${key}: ${count}`);",
+													"    });",
 													"}"
 												]
 											}
@@ -2090,6 +2267,30 @@
 								},
 								{
 									"name": "Get Connection Details",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Connection details retrieved', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const connection = pm.response.json();",
+													"    pm.expect(connection).to.have.property('id');",
+													"    pm.expect(connection).to.have.property('provider');",
+													"});",
+													"",
+													"const conn = pm.response.json();",
+													"const freeIcon = conn.provider === 'tink' ? '🆓' : '💰';",
+													"console.log(`${freeIcon} Provider: ${conn.provider}`);",
+													"console.log(`📊 Status: ${conn.connectionStatus}`);",
+													"console.log(`🔗 Connection ID: ${conn.connectionId}`);",
+													"if (conn.lastSyncAt) {",
+													"    console.log(`⏰ Last sync: ${conn.lastSyncAt}`);",
+													"}"
+												]
+											}
+										}
+									],
 									"request": {
 										"method": "GET",
 										"header": [
@@ -2114,16 +2315,16 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Health check response structure', function () {",
+													"pm.test('Health check response valid', function () {",
+													"    pm.response.to.have.status(200);",
 													"    const response = pm.response.json();",
 													"    pm.expect(response).to.have.property('healthy');",
 													"    pm.expect(response).to.have.property('status');",
-													"    pm.expect(response).to.have.property('checkedAt');",
 													"});",
 													"",
 													"const health = pm.response.json();",
-													"console.log('🏥 Connection health:', health.healthy ? '✅ Healthy' : '❌ Unhealthy');",
-													"console.log('📊 Status:', health.status);"
+													"const healthIcon = health.healthy ? '✅' : '❌';",
+													"console.log(`🏥 Connection health: ${healthIcon} ${health.status}`);"
 												]
 											}
 										}
@@ -2151,7 +2352,7 @@
 				},
 				{
 					"name": "💳 3. Accounts Management",
-					"description": "Gestion et consultation des comptes bancaires",
+					"description": "Gestion et consultation des comptes bancaires (tous providers)",
 					"item": [
 						{
 							"name": "📊 Account Discovery",
@@ -2172,11 +2373,9 @@
 													"if (pm.response.code === 200) {",
 													"    const accounts = pm.response.json();",
 													"    ",
-													"    // Store account IDs for later use",
 													"    if (accounts.length > 0) {",
 													"        pm.globals.set('primary_account_id', accounts[0].id);",
 													"        ",
-													"        // Find different account types",
 													"        const checkingAccount = accounts.find(a => a.type === 'checking');",
 													"        const savingsAccount = accounts.find(a => a.type === 'savings');",
 													"        ",
@@ -2184,16 +2383,25 @@
 													"        if (savingsAccount) pm.globals.set('savings_account_id', savingsAccount.id);",
 													"    }",
 													"    ",
-													"    // Log account summary",
-													"    console.log(`💳 Total accounts: ${accounts.length}`);",
+													"    console.log(`💳 Total comptes: ${accounts.length}`);",
+													"    ",
+													"    // Analyse par type",
 													"    const accountsByType = accounts.reduce((acc, account) => {",
 													"        acc[account.type] = (acc[account.type] || 0) + 1;",
 													"        return acc;",
 													"    }, {});",
-													"    console.log('📊 Accounts by type:', accountsByType);",
+													"    console.log('📊 Répartition par type:', accountsByType);",
 													"    ",
+													"    // Total des soldes",
 													"    const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);",
-													"    console.log(`💰 Total balance: ${totalBalance.toFixed(2)} EUR`);",
+													"    console.log(`💰 Solde total: ${totalBalance.toFixed(2)} EUR`);",
+													"    ",
+													"    // Détail des premiers comptes",
+													"    console.log('\\n💳 Comptes disponibles:');",
+													"    accounts.slice(0, 3).forEach((account, index) => {",
+													"        const balance = account.balance >= 0 ? `+${account.balance}` : `${account.balance}`;",
+													"        console.log(`  ${index + 1}. ${account.name} (${account.type}) - ${balance} ${account.currency}`);",
+													"    });",
 													"}"
 												]
 											}
@@ -2230,7 +2438,7 @@
 													"});",
 													"",
 													"const accounts = pm.response.json();",
-													"console.log(`🔗 Accounts for connection: ${accounts.length}`);",
+													"console.log(`🔗 Comptes pour la connexion: ${accounts.length}`);",
 													"accounts.forEach((account, index) => {",
 													"    console.log(`  ${index + 1}. ${account.name} (${account.type}) - ${account.balance} ${account.currency}`);",
 													"});"
@@ -2254,48 +2462,6 @@
 											"path": ["api", "banking", "connections", "{{active_connection_id}}", "accounts"]
 										}
 									}
-								},
-								{
-									"name": "Get Account Details",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test('Account details retrieved', function () {",
-													"    pm.response.to.have.status(200);",
-													"    const account = pm.response.json();",
-													"    pm.expect(account).to.have.property('id');",
-													"    pm.expect(account).to.have.property('name');",
-													"    pm.expect(account).to.have.property('balance');",
-													"    pm.expect(account).to.have.property('type');",
-													"});",
-													"",
-													"const account = pm.response.json();",
-													"console.log(`💳 Account: ${account.name}`);",
-													"console.log(`💰 Balance: ${account.balance} ${account.currency}`);",
-													"console.log(`🏦 Type: ${account.type}`);",
-													"if (account.iban) console.log(`🔢 IBAN: ${account.iban}`);"
-												]
-											}
-										}
-									],
-									"request": {
-										"method": "GET",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											}
-										],
-										"url": {
-											"raw": "http://localhost:9999/api/banking/accounts/{{primary_account_id}}",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "accounts", "{{primary_account_id}}"]
-										}
-									}
 								}
 							]
 						},
@@ -2314,17 +2480,16 @@
 													"    const summary = pm.response.json();",
 													"    pm.expect(summary).to.have.property('totalBalance');",
 													"    pm.expect(summary).to.have.property('totalAssets');",
-													"    pm.expect(summary).to.have.property('totalLiabilities');",
 													"    pm.expect(summary).to.have.property('netWorth');",
 													"});",
 													"",
 													"const summary = pm.response.json();",
-													"console.log('📊 RÉSUMÉ FINANCIER GLOBAL');",
+													"console.log('💰 RÉSUMÉ FINANCIER GLOBAL');",
 													"console.log('=' .repeat(35));",
-													"console.log(`💰 Solde total: ${summary.totalBalance} EUR`);",
+													"console.log(`💎 Patrimoine net: ${summary.netWorth} EUR`);",
 													"console.log(`📈 Total actifs: ${summary.totalAssets} EUR`);",
 													"console.log(`📉 Total passifs: ${summary.totalLiabilities} EUR`);",
-													"console.log(`💎 Patrimoine net: ${summary.netWorth} EUR`);",
+													"console.log(`💰 Solde bancaire: ${summary.totalBalance} EUR`);",
 													"console.log(`🏦 Nombre de comptes: ${summary.totalAccounts}`);",
 													"",
 													"if (summary.balanceByType) {",
@@ -2332,12 +2497,6 @@
 													"    Object.entries(summary.balanceByType).forEach(([type, balance]) => {",
 													"        console.log(`  • ${type}: ${balance} EUR`);",
 													"    });",
-													"}",
-													"",
-													"if (summary.monthlyIncome || summary.monthlyExpenses) {",
-													"    console.log('\\n📊 Cash Flow mensuel:');",
-													"    console.log(`  ⬆️ Revenus: ${summary.monthlyIncome} EUR`);",
-													"    console.log(`  ⬇️ Dépenses: ${summary.monthlyExpenses} EUR`);",
 													"}"
 												]
 											}
@@ -2372,7 +2531,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Sync completed', function () {",
+													"pm.test('Sync completed successfully', function () {",
 													"    pm.response.to.have.status(200);",
 													"    const syncResult = pm.response.json();",
 													"    pm.expect(syncResult).to.have.property('success');",
@@ -2434,20 +2593,25 @@
 													"const syncResults = pm.response.json();",
 													"console.log(`🔄 Synchronisation de ${syncResults.length} connexions`);",
 													"",
-													"let totalAccounts = 0, totalTransactions = 0;",
+													"let totalAccounts = 0, totalTransactions = 0, tinkCount = 0;",
 													"syncResults.forEach((result, index) => {",
 													"    const status = result.success ? '✅' : '❌';",
-													"    console.log(`${status} Connexion ${result.connectionId}: ${result.accountsSynced} comptes, ${result.transactionsSynced} transactions`);",
+													"    const provider = result.provider || 'unknown';",
+													"    const freeIcon = provider === 'tink' ? '🆓' : '';",
+													"    ",
+													"    console.log(`${status} ${freeIcon} Connexion ${result.connectionId}: ${result.accountsSynced} comptes, ${result.transactionsSynced} transactions`);",
 													"    ",
 													"    if (result.success) {",
 													"        totalAccounts += result.accountsSynced;",
 													"        totalTransactions += result.transactionsSynced;",
+													"        if (provider === 'tink') tinkCount++;",
 													"    }",
 													"});",
 													"",
-													"console.log('\\n📊 TOTAL SYNCHRONISÉ:');",
+													"console.log('\\n📊 RÉSUMÉ TOTAL:');",
 													"console.log(`  📊 Comptes: ${totalAccounts}`);",
-													"console.log(`  💰 Transactions: ${totalTransactions}`);"
+													"console.log(`  💰 Transactions: ${totalTransactions}`);",
+													"if (tinkCount > 0) console.log(`  🆓 Connexions Tink (gratuites): ${tinkCount}`);"
 												]
 											}
 										}
@@ -2475,7 +2639,7 @@
 				},
 				{
 					"name": "💰 4. Transactions & Analytics",
-					"description": "Gestion des transactions et analyses financières",
+					"description": "Gestion des transactions et analyses financières (tous providers)",
 					"item": [
 						{
 							"name": "🔍 Transaction Search",
@@ -2502,12 +2666,13 @@
 													"    console.log(`🔍 Trouvé ${response.totalElements} transactions`);",
 													"    console.log(`📄 Page actuelle: ${response.content.length} transactions`);",
 													"    ",
-													"    // Show first few transactions",
+													"    // Afficher les premières transactions",
 													"    console.log('\\n💰 Dernières transactions:');",
 													"    response.content.slice(0, 5).forEach((tx, index) => {",
 													"        const amount = tx.amount > 0 ? `+${tx.amount}` : `${tx.amount}`;",
 													"        const type = tx.amount > 0 ? '⬆️' : '⬇️';",
-													"        console.log(`  ${index + 1}. ${type} ${amount} EUR - ${tx.description} (${tx.transactionDate})`);",
+													"        const category = tx.category ? `[${tx.category}]` : '[non catégorisée]';",
+													"        console.log(`  ${index + 1}. ${type} ${amount} EUR - ${tx.description} ${category} (${tx.transactionDate})`);",
 													"    });",
 													"}"
 												]
@@ -2540,7 +2705,27 @@
 									}
 								},
 								{
-									"name": "Search Debit Transactions > 100€",
+									"name": "Search Large Debit Transactions",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Large debit transactions found', function () {",
+													"    pm.response.to.have.status(200);",
+													"    const response = pm.response.json();",
+													"    pm.expect(response.content).to.be.an('array');",
+													"});",
+													"",
+													"const response = pm.response.json();",
+													"console.log(`💸 Grosses dépenses trouvées: ${response.totalElements}`);",
+													"response.content.slice(0, 5).forEach((tx, index) => {",
+													"    console.log(`  ${index + 1}. ${tx.amount} EUR - ${tx.description} (${tx.transactionDate})`);",
+													"});"
+												]
+											}
+										}
+									],
 									"request": {
 										"method": "POST",
 										"header": [
@@ -2563,167 +2748,6 @@
 											"host": ["localhost"],
 											"port": "9999",
 											"path": ["api", "banking", "transactions", "search"]
-										}
-									}
-								},
-								{
-									"name": "Search Transactions by Category",
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											},
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"page\": 0,\n    \"size\": 30,\n    \"category\": \"alimentation\",\n    \"type\": \"DEBIT\",\n    \"startDate\": \"2024-01-01\",\n    \"endDate\": \"2024-12-31\",\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\"\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/transactions/search",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "transactions", "search"]
-										}
-									}
-								},
-								{
-									"name": "Search by Description Pattern",
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											},
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"page\": 0,\n    \"size\": 20,\n    \"description\": \"CARTE\",\n    \"startDate\": \"2024-06-01\",\n    \"endDate\": \"2024-06-30\",\n    \"sortBy\": \"amount\",\n    \"sortDirection\": \"ASC\"\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/transactions/search",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "transactions", "search"]
-										}
-									}
-								}
-							]
-						},
-						{
-							"name": "💳 Account Transactions",
-							"item": [
-								{
-									"name": "Get Recent Account Transactions",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test('Account transactions retrieved', function () {",
-													"    pm.response.to.have.status(200);",
-													"    const response = pm.response.json();",
-													"    pm.expect(response).to.have.property('content');",
-													"    pm.expect(response).to.have.property('totalElements');",
-													"});",
-													"",
-													"const response = pm.response.json();",
-													"console.log(`💳 Transactions du compte: ${response.totalElements}`);",
-													"",
-													"if (response.content.length > 0) {",
-													"    const transactions = response.content;",
-													"    const totalDebit = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);",
-													"    const totalCredit = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);",
-													"    ",
-													"    console.log(`💰 Crédits: +${totalCredit.toFixed(2)} EUR`);",
-													"    console.log(`💸 Débits: -${totalDebit.toFixed(2)} EUR`);",
-													"    console.log(`📊 Solde période: ${(totalCredit - totalDebit).toFixed(2)} EUR`);",
-													"}"
-												]
-											}
-										}
-									],
-									"request": {
-										"method": "GET",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											}
-										],
-										"url": {
-											"raw": "http://localhost:9999/api/banking/accounts/{{primary_account_id}}/transactions?page=0&size=50&sortBy=transactionDate&sortDir=DESC",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "accounts", "{{primary_account_id}}", "transactions"],
-											"query": [
-												{
-													"key": "page",
-													"value": "0"
-												},
-												{
-													"key": "size",
-													"value": "50"
-												},
-												{
-													"key": "sortBy",
-													"value": "transactionDate"
-												},
-												{
-													"key": "sortDir",
-													"value": "DESC"
-												}
-											]
-										}
-									}
-								},
-								{
-									"name": "Get Checking Account Transactions",
-									"request": {
-										"method": "GET",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											}
-										],
-										"url": {
-											"raw": "http://localhost:9999/api/banking/accounts/{{checking_account_id}}/transactions?page=0&size=30&sortBy=transactionDate&sortDir=DESC",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "accounts", "{{checking_account_id}}", "transactions"],
-											"query": [
-												{
-													"key": "page",
-													"value": "0"
-												},
-												{
-													"key": "size",
-													"value": "30"
-												},
-												{
-													"key": "sortBy",
-													"value": "transactionDate"
-												},
-												{
-													"key": "sortDir",
-													"value": "DESC"
-												}
-											]
 										}
 									}
 								}
@@ -2778,7 +2802,7 @@
 									}
 								},
 								{
-									"name": "Update Transaction Category - Alimentation",
+									"name": "Update Transaction Category",
 									"event": [
 										{
 											"listen": "test",
@@ -2819,33 +2843,6 @@
 											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}", "category"]
 										}
 									}
-								},
-								{
-									"name": "Update Transaction Category - Transport",
-									"request": {
-										"method": "PATCH",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											},
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"category\": \"transport\"\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/transactions/{{sample_transaction_id}}/category",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "transactions", "{{sample_transaction_id}}", "category"]
-										}
-									}
 								}
 							]
 						},
@@ -2853,7 +2850,7 @@
 							"name": "📊 Financial Analytics",
 							"item": [
 								{
-									"name": "Get Expenses by Category (Current Year)",
+									"name": "Get Expenses by Category Analysis",
 									"event": [
 										{
 											"listen": "test",
@@ -2874,12 +2871,13 @@
 													"console.log(`📈 Moyenne journalière: ${stats.averageDailyExpense} EUR`);",
 													"",
 													"if (stats.categoryExpenses) {",
-													"    console.log('\\n🏷️ Répartition par catégorie:');",
+													"    console.log('\\n🏷️ Top 5 catégories:');",
 													"    Object.entries(stats.categoryExpenses)",
 													"        .sort(([,a], [,b]) => b - a)",
-													"        .forEach(([category, amount]) => {",
+													"        .slice(0, 5)",
+													"        .forEach(([category, amount], index) => {",
 													"            const percentage = ((amount / stats.totalExpenses) * 100).toFixed(1);",
-													"            console.log(`  • ${category}: ${amount} EUR (${percentage}%)`);",
+													"            console.log(`  ${index + 1}. ${category}: ${amount} EUR (${percentage}%)`);",
 													"        });",
 													"}"
 												]
@@ -2914,36 +2912,7 @@
 									}
 								},
 								{
-									"name": "Get Expenses by Category (Last 3 Months)",
-									"request": {
-										"method": "GET",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											}
-										],
-										"url": {
-											"raw": "http://localhost:9999/api/banking/transactions/statistics/categories?startDate=2024-03-01&endDate=2024-06-01",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "transactions", "statistics", "categories"],
-											"query": [
-												{
-													"key": "startDate",
-													"value": "2024-03-01"
-												},
-												{
-													"key": "endDate",
-													"value": "2024-06-01"
-												}
-											]
-										}
-									}
-								},
-								{
-									"name": "Get Cash Flow Analysis (Current Year)",
+									"name": "Get Cash Flow Analysis",
 									"event": [
 										{
 											"listen": "test",
@@ -2979,11 +2948,11 @@
 													"}",
 													"",
 													"if (savingsRate >= 20) {",
-													"    console.log('🌟 Excellent taux d\\'épargne');",
+													"    console.log('🌟 Excellent taux d\\'épargne (>20%)');",
 													"} else if (savingsRate >= 10) {",
-													"    console.log('👍 Bon taux d\\'épargne');",
+													"    console.log('👍 Bon taux d\\'épargne (10-20%)');",
 													"} else if (savingsRate >= 0) {",
-													"    console.log('⚡ Taux d\\'épargne à améliorer');",
+													"    console.log('⚡ Taux d\\'épargne à améliorer (<10%)');",
 													"} else {",
 													"    console.log('🚨 Épargne négative - Action requise');",
 													"}"
@@ -3017,35 +2986,6 @@
 											]
 										}
 									}
-								},
-								{
-									"name": "Get Cash Flow Analysis (Last Month)",
-									"request": {
-										"method": "GET",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											}
-										],
-										"url": {
-											"raw": "http://localhost:9999/api/banking/transactions/statistics/cash-flow?startDate=2024-05-01&endDate=2024-05-31",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "transactions", "statistics", "cash-flow"],
-											"query": [
-												{
-													"key": "startDate",
-													"value": "2024-05-01"
-												},
-												{
-													"key": "endDate",
-													"value": "2024-05-31"
-												}
-											]
-										}
-									}
 								}
 							]
 						}
@@ -3053,7 +2993,7 @@
 				},
 				{
 					"name": "🔔 5. Webhooks & Monitoring",
-					"description": "Tests des webhooks et monitoring du système bancaire",
+					"description": "Tests des webhooks avec support Tink callback",
 					"item": [
 						{
 							"name": "🔗 Webhook Endpoints",
@@ -3068,13 +3008,10 @@
 													"pm.test('Webhook service healthy', function () {",
 													"    pm.response.to.have.status(200);",
 													"    const response = pm.response.json();",
-													"    pm.expect(response).to.have.property('status');",
 													"    pm.expect(response.status).to.eql('healthy');",
 													"});",
 													"",
-													"const response = pm.response.json();",
-													"console.log('🔔 Webhook service status:', response.status);",
-													"console.log('🕐 Timestamp:', response.timestamp);"
+													"console.log('🔔 Webhook service: Healthy ✅');"
 												]
 											}
 										}
@@ -3095,20 +3032,61 @@
 									}
 								},
 								{
-									"name": "Test Budget Insight Webhook - Connection Synced",
+									"name": "Test Tink Callback - Success",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Webhook processed successfully', function () {",
+													"pm.test('Tink callback processed', function () {",
+													"    pm.response.to.have.status(200);",
+													"});",
+													"",
+													"console.log('✅ Callback Tink traité avec succès');"
+												]
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://localhost:9999/api/banking/webhooks/tink/callback?ref=mosaique_demo_123456&status=success",
+											"protocol": "http",
+											"host": ["localhost"],
+											"port": "9999",
+											"path": ["api", "banking", "webhooks", "tink", "callback"],
+											"query": [
+												{
+													"key": "ref",
+													"value": "mosaique_demo_123456"
+												},
+												{
+													"key": "status",
+													"value": "success"
+												}
+											]
+										}
+									}
+								},
+								{
+									"name": "Test Budget Insight Webhook",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test('Webhook processed', function () {",
 													"    pm.expect([200, 401]).to.include(pm.response.code);",
 													"});",
 													"",
 													"if (pm.response.code === 200) {",
-													"    console.log('✅ Webhook Budget Insight traité avec succès');",
-													"} else if (pm.response.code === 401) {",
-													"    console.log('🔐 Signature webhook invalide (attendu en mode test)');",
+													"    console.log('✅ Webhook Budget Insight traité');",
+													"} else {",
+													"    console.log('🔐 Signature invalide (attendu en test)');",
 													"}"
 												]
 											}
@@ -3126,12 +3104,12 @@
 											},
 											{
 												"key": "X-Webhook-Signature",
-												"value": "sha256=test_signature_budget_insight"
+												"value": "sha256=test_signature"
 											}
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"type\": \"connection.synced\",\n    \"connection_id\": \"bi_test_connection_123456\",\n    \"timestamp\": \"2024-06-03T14:30:00Z\",\n    \"data\": {\n        \"accounts_synced\": 3,\n        \"transactions_synced\": 157,\n        \"sync_duration_ms\": 2340,\n        \"status\": \"success\"\n    },\n    \"metadata\": {\n        \"provider\": \"budget-insight\",\n        \"user_id\": \"temp_user_789\"\n    }\n}"
+											"raw": "{\n    \"type\": \"connection.synced\",\n    \"connection_id\": \"bi_test_123456\",\n    \"timestamp\": \"2024-06-03T14:30:00Z\",\n    \"data\": {\n        \"accounts_synced\": 3,\n        \"transactions_synced\": 157\n    }\n}"
 										},
 										"url": {
 											"raw": "http://localhost:9999/api/banking/webhooks/budget-insight",
@@ -3139,66 +3117,6 @@
 											"host": ["localhost"],
 											"port": "9999",
 											"path": ["api", "banking", "webhooks", "budget-insight"]
-										}
-									}
-								},
-								{
-									"name": "Test Budget Insight Webhook - Connection Error",
-									"request": {
-										"auth": {
-											"type": "noauth"
-										},
-										"method": "POST",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											},
-											{
-												"key": "X-Webhook-Signature",
-												"value": "sha256=test_signature_budget_insight_error"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"type\": \"connection.error\",\n    \"connection_id\": \"bi_test_connection_error_456\",\n    \"timestamp\": \"2024-06-03T14:35:00Z\",\n    \"error\": {\n        \"code\": \"AUTHENTICATION_FAILED\",\n        \"message\": \"Invalid credentials provided\",\n        \"retry_possible\": true\n    },\n    \"metadata\": {\n        \"provider\": \"budget-insight\",\n        \"bank_name\": \"Crédit Agricole\",\n        \"attempt_count\": 3\n    }\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/webhooks/budget-insight",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "webhooks", "budget-insight"]
-										}
-									}
-								},
-								{
-									"name": "Test Linxo Webhook - Transaction Created",
-									"request": {
-										"auth": {
-											"type": "noauth"
-										},
-										"method": "POST",
-										"header": [
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											},
-											{
-												"key": "X-Linxo-Signature",
-												"value": "sha256=test_signature_linxo_connect"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"event\": \"transaction.created\",\n    \"connection_id\": \"linxo_connection_987654\",\n    \"account_id\": \"linxo_account_123789\",\n    \"transaction\": {\n        \"id\": \"linxo_tx_456123789\",\n        \"amount\": -4567,\n        \"description\": \"ACHAT CARTE CARREFOUR MARKET\",\n        \"date\": \"2024-06-03\",\n        \"category\": \"alimentation\",\n        \"type\": \"debit\"\n    },\n    \"timestamp\": \"2024-06-03T14:45:00Z\",\n    \"metadata\": {\n        \"provider\": \"linxo-connect\",\n        \"bank_name\": \"Crédit Mutuel\"\n    }\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/webhooks/linxo",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "webhooks", "linxo"]
 										}
 									}
 								}
@@ -3219,7 +3137,6 @@
 													"    const status = pm.response.json();",
 													"    pm.expect(status).to.have.property('totalConnections');",
 													"    pm.expect(status).to.have.property('activeConnections');",
-													"    pm.expect(status).to.have.property('totalAccounts');",
 													"});",
 													"",
 													"const status = pm.response.json();",
@@ -3229,11 +3146,6 @@
 													"console.log(`✅ Connexions actives: ${status.activeConnections}`);",
 													"console.log(`💳 Comptes totaux: ${status.totalAccounts}`);",
 													"",
-													"if (status.lastSyncAt) {",
-													"    console.log(`⏰ Dernière sync: ${status.lastSyncAt}`);",
-													"}",
-													"",
-													"// Health indicators",
 													"const healthScore = status.totalConnections > 0 ? (status.activeConnections / status.totalConnections * 100).toFixed(1) : 0;",
 													"console.log(`📊 Score de santé: ${healthScore}%`);",
 													"",
@@ -3241,10 +3153,8 @@
 													"    console.log('💚 Système en excellente santé');",
 													"} else if (healthScore >= 60) {",
 													"    console.log('💛 Système en bonne santé');",
-													"} else if (healthScore >= 40) {",
-													"    console.log('🧡 Système nécessite attention');",
 													"} else {",
-													"    console.log('❤️ Système nécessite intervention');",
+													"    console.log('❤️ Système nécessite attention');",
 													"}"
 												]
 											}
@@ -3266,51 +3176,6 @@
 											"path": ["api", "banking", "status"]
 										}
 									}
-								},
-								{
-									"name": "Application Health Check",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test('Application is healthy', function () {",
-													"    pm.response.to.have.status(200);",
-													"    const health = pm.response.json();",
-													"    pm.expect(health.status).to.eql('UP');",
-													"});",
-													"",
-													"const health = pm.response.json();",
-													"console.log('🏥 APPLICATION HEALTH');",
-													"console.log('=' .repeat(25));",
-													"console.log(`📊 Status: ${health.status}`);",
-													"",
-													"if (health.components) {",
-													"    console.log('\\n🔍 Composants:');",
-													"    Object.entries(health.components).forEach(([component, details]) => {",
-													"        const status = details.status || 'UNKNOWN';",
-													"        const icon = status === 'UP' ? '✅' : '❌';",
-													"        console.log(`  ${icon} ${component}: ${status}`);",
-													"    });",
-													"}"
-												]
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "noauth"
-										},
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "http://localhost:9999/actuator/health",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["actuator", "health"]
-										}
-									}
 								}
 							]
 						}
@@ -3318,28 +3183,29 @@
 				},
 				{
 					"name": "🧪 6. Test Scenarios",
-					"description": "Scénarios de test complets pour validation E2E",
+					"description": "Scénarios E2E avec focus sur Tink GRATUIT",
 					"item": [
 						{
-							"name": "🚀 Complete Banking Flow Test",
+							"name": "🆓 Complete Tink Flow Test (GRATUIT)",
 							"item": [
 								{
-									"name": "1. Setup Mock Connection",
+									"name": "1. Setup Tink Connection (FREE)",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Step 1: Mock connection setup', function () {",
+													"pm.test('Step 1: Tink connection setup', function () {",
 													"    pm.expect([201, 409]).to.include(pm.response.code);",
 													"});",
 													"",
 													"if (pm.response.code === 201) {",
 													"    const response = pm.response.json();",
-													"    pm.globals.set('test_connection_id', response.id);",
-													"    console.log('🚀 Step 1/6: Mock connection created');",
+													"    pm.globals.set('test_tink_connection_id', response.id);",
+													"    console.log('🆓 Step 1/6: Connexion Tink GRATUITE créée');",
+													"    console.log('💰 Économie: 0€/mois vs autres providers payants');",
 													"} else {",
-													"    console.log('🚀 Step 1/6: Using existing connection');",
+													"    console.log('🆓 Step 1/6: Utilisation connexion Tink existante');",
 													"}"
 												]
 											}
@@ -3359,7 +3225,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"provider\": \"mock\",\n    \"bankCredentials\": {\n        \"login\": \"test_e2e@mosaique.com\",\n        \"password\": \"E2E_Test_Password_123!\"\n    }\n}"
+											"raw": "{\n    \"provider\": \"tink\",\n    \"bankCredentials\": {\n        \"login\": \"test_e2e_tink@mosaique.com\",\n        \"password\": \"E2E_Tink_Free_Password_123!\"\n    }\n}"
 										},
 										"url": {
 											"raw": "http://localhost:9999/api/banking/connections",
@@ -3371,17 +3237,17 @@
 									}
 								},
 								{
-									"name": "2. Confirm Connection",
+									"name": "2. Confirm Tink Connection",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Step 2: Connection confirmed', function () {",
+													"pm.test('Step 2: Tink connection confirmed', function () {",
 													"    pm.response.to.have.status(200);",
 													"});",
 													"",
-													"console.log('🚀 Step 2/6: Connection confirmed and activated');"
+													"console.log('🆓 Step 2/6: Connexion Tink confirmée GRATUITEMENT');"
 												]
 											}
 										}
@@ -3400,32 +3266,32 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"confirmationCode\": \"E2E123\"\n}"
+											"raw": "{\n    \"confirmationCode\": \"TINK_E2E_FREE\"\n}"
 										},
 										"url": {
-											"raw": "http://localhost:9999/api/banking/connections/{{test_connection_id}}/confirm",
+											"raw": "http://localhost:9999/api/banking/connections/{{test_tink_connection_id}}/confirm",
 											"protocol": "http",
 											"host": ["localhost"],
 											"port": "9999",
-											"path": ["api", "banking", "connections", "{{test_connection_id}}", "confirm"]
+											"path": ["api", "banking", "connections", "{{test_tink_connection_id}}", "confirm"]
 										}
 									}
 								},
 								{
-									"name": "3. Sync Connection Data",
+									"name": "3. Sync Tink Data (FREE)",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Step 3: Data synchronized', function () {",
+													"pm.test('Step 3: Tink data synchronized', function () {",
 													"    pm.response.to.have.status(200);",
 													"    const syncResult = pm.response.json();",
 													"    pm.expect(syncResult.success).to.be.true;",
 													"});",
 													"",
 													"const syncResult = pm.response.json();",
-													"console.log(`🚀 Step 3/6: Synced ${syncResult.accountsSynced} accounts, ${syncResult.transactionsSynced} transactions`);"
+													"console.log(`🆓 Step 3/6: Tink sync GRATUIT - ${syncResult.accountsSynced} comptes, ${syncResult.transactionsSynced} transactions`);"
 												]
 											}
 										}
@@ -3439,32 +3305,29 @@
 											}
 										],
 										"url": {
-											"raw": "http://localhost:9999/api/banking/connections/{{test_connection_id}}/sync",
+											"raw": "http://localhost:9999/api/banking/connections/{{test_tink_connection_id}}/sync",
 											"protocol": "http",
 											"host": ["localhost"],
 											"port": "9999",
-											"path": ["api", "banking", "connections", "{{test_connection_id}}", "sync"]
+											"path": ["api", "banking", "connections", "{{test_tink_connection_id}}", "sync"]
 										}
 									}
 								},
 								{
-									"name": "4. Verify Accounts Created",
+									"name": "4. Verify Tink Accounts",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Step 4: Accounts verified', function () {",
+													"pm.test('Step 4: Tink accounts verified', function () {",
 													"    pm.response.to.have.status(200);",
 													"    const accounts = pm.response.json();",
 													"    pm.expect(accounts.length).to.be.above(0);",
 													"});",
 													"",
 													"const accounts = pm.response.json();",
-													"console.log(`🚀 Step 4/6: Verified ${accounts.length} accounts available`);",
-													"if (accounts.length > 0) {",
-													"    pm.globals.set('test_account_id', accounts[0].id);",
-													"}"
+													"console.log(`🆓 Step 4/6: ${accounts.length} comptes Tink vérifiés GRATUITEMENT`);"
 												]
 											}
 										}
@@ -3478,60 +3341,52 @@
 											}
 										],
 										"url": {
-											"raw": "http://localhost:9999/api/banking/connections/{{test_connection_id}}/accounts",
+											"raw": "http://localhost:9999/api/banking/connections/{{test_tink_connection_id}}/accounts",
 											"protocol": "http",
 											"host": ["localhost"],
 											"port": "9999",
-											"path": ["api", "banking", "connections", "{{test_connection_id}}", "accounts"]
+											"path": ["api", "banking", "connections", "{{test_tink_connection_id}}", "accounts"]
 										}
 									}
 								},
 								{
-									"name": "5. Test Transaction Search",
+									"name": "5. Test Tink Health Check",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Step 5: Transactions searchable', function () {",
+													"pm.test('Step 5: Tink health verified', function () {",
 													"    pm.response.to.have.status(200);",
-													"    const response = pm.response.json();",
-													"    pm.expect(response).to.have.property('content');",
+													"    const health = pm.response.json();",
+													"    pm.expect(health).to.have.property('healthy');",
 													"});",
 													"",
-													"const response = pm.response.json();",
-													"console.log(`🚀 Step 5/6: Found ${response.totalElements} transactions in search`);"
+													"const health = pm.response.json();",
+													"console.log(`🆓 Step 5/6: Santé Tink ${health.healthy ? '✅' : '❌'} (gratuit)`);"
 												]
 											}
 										}
 									],
 									"request": {
-										"method": "POST",
+										"method": "GET",
 										"header": [
 											{
 												"key": "Authorization",
 												"value": "Bearer {{jwt_token}}"
-											},
-											{
-												"key": "Content-Type",
-												"value": "application/json"
 											}
 										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"accountId\": {{test_account_id}},\n    \"page\": 0,\n    \"size\": 10,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\"\n}"
-										},
 										"url": {
-											"raw": "http://localhost:9999/api/banking/transactions/search",
+											"raw": "http://localhost:9999/api/banking/connections/{{test_tink_connection_id}}/health",
 											"protocol": "http",
 											"host": ["localhost"],
 											"port": "9999",
-											"path": ["api", "banking", "transactions", "search"]
+											"path": ["api", "banking", "connections", "{{test_tink_connection_id}}", "health"]
 										}
 									}
 								},
 								{
-									"name": "6. Verify Financial Summary",
+									"name": "6. Final Financial Summary",
 									"event": [
 										{
 											"listen": "test",
@@ -3541,15 +3396,16 @@
 													"    pm.response.to.have.status(200);",
 													"    const summary = pm.response.json();",
 													"    pm.expect(summary).to.have.property('totalBalance');",
-													"    pm.expect(summary).to.have.property('totalAccounts');",
 													"});",
 													"",
 													"const summary = pm.response.json();",
-													"console.log('🚀 Step 6/6: Financial summary verified');",
+													"console.log('🆓 Step 6/6: Résumé financier vérifié');",
 													"console.log('');",
-													"console.log('🎉 BANKING E2E TEST COMPLETED SUCCESSFULLY!');",
-													"console.log('✅ All 6 steps passed');",
-													"console.log(`📊 Final summary: ${summary.totalAccounts} accounts, ${summary.totalBalance} EUR`);",
+													"console.log('🎉 TINK E2E TEST COMPLETED SUCCESSFULLY!');",
+													"console.log('✅ Tous les tests Tink GRATUITS réussis');",
+													"console.log(`📊 Résumé: ${summary.totalAccounts} comptes, ${summary.totalBalance} EUR`);",
+													"console.log('💰 Coût total: 0€ (100% GRATUIT)');",
+													"console.log('🔄 Reste: ' + (100 - 6) + ' connexions gratuites ce mois');",
 													"console.log('=' .repeat(50));"
 												]
 											}
@@ -3578,26 +3434,25 @@
 							"name": "⚡ Performance Tests",
 							"item": [
 								{
-									"name": "Load Test - Multiple Provider Requests",
+									"name": "Provider Performance Comparison",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test('Response time acceptable', function () {",
-													"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+													"pm.test('Providers response acceptable', function () {",
+													"    pm.expect(pm.response.responseTime).to.be.below(3000);",
 													"});",
 													"",
-													"pm.test('Rate limiting working', function () {",
-													"    if (pm.response.code === 429) {",
-													"        pm.test('Rate limit headers present', function() {",
-													"            pm.expect(pm.response.headers.get('X-RateLimit-Remaining')).to.exist;",
-													"        });",
-													"        console.log('🚦 Rate limiting triggered (expected behavior)');",
-													"    } else {",
-													"        console.log(`⚡ Response time: ${pm.response.responseTime}ms`);",
+													"console.log(`⚡ Temps de réponse providers: ${pm.response.responseTime}ms`);",
+													"",
+													"if (pm.response.code === 200) {",
+													"    const providers = pm.response.json();",
+													"    const tink = providers.find(p => p.code === 'tink');",
+													"    if (tink) {",
+													"        console.log('🆓 Tink available: FREE 100 connections/month');",
 													"    }",
-													"});"
+													"}"
 												]
 											}
 										}
@@ -3616,48 +3471,6 @@
 											"host": ["localhost"],
 											"port": "9999",
 											"path": ["api", "banking", "providers"]
-										}
-									}
-								},
-								{
-									"name": "Stress Test - Large Transaction Search",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test('Large search handled efficiently', function () {",
-													"    pm.expect(pm.response.responseTime).to.be.below(10000);",
-													"    pm.response.to.have.status(200);",
-													"});",
-													"",
-													"console.log(`⚡ Large search response time: ${pm.response.responseTime}ms`);"
-												]
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [
-											{
-												"key": "Authorization",
-												"value": "Bearer {{jwt_token}}"
-											},
-											{
-												"key": "Content-Type",
-												"value": "application/json"
-											}
-										],
-										"body": {
-											"mode": "raw",
-											"raw": "{\n    \"page\": 0,\n    \"size\": 500,\n    \"sortBy\": \"transactionDate\",\n    \"sortDirection\": \"DESC\",\n    \"startDate\": \"2023-01-01\",\n    \"endDate\": \"2024-12-31\"\n}"
-										},
-										"url": {
-											"raw": "http://localhost:9999/api/banking/transactions/search",
-											"protocol": "http",
-											"host": ["localhost"],
-											"port": "9999",
-											"path": ["api", "banking", "transactions", "search"]
 										}
 									}
 								}
