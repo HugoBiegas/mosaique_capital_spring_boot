@@ -26,8 +26,6 @@ public class AssetController {
 
     private final AssetService assetService;
 
-    // ===== ENDPOINTS EXISTANTS =====
-
     /**
      * Récupère tous les actifs actifs (non vendus)
      */
@@ -50,8 +48,9 @@ public class AssetController {
     @GetMapping("/type/{type}")
     public ResponseEntity<List<AssetDto>> getAssetsByType(
             @PathVariable AssetType type,
-            @RequestParam(defaultValue = "false") boolean includeSubTypes) {
-        return ResponseEntity.ok(assetService.getAssetsByType(type, includeSubTypes));
+            @RequestParam(defaultValue = "false") boolean includeSubTypes,
+            @RequestParam(defaultValue = "false") boolean includeSold) {
+        return ResponseEntity.ok(assetService.getAssetsByType(type, includeSubTypes, includeSold));
     }
 
     /**
@@ -71,10 +70,8 @@ public class AssetController {
         return ResponseEntity.ok(assetService.updateAsset(id, assetDto));
     }
 
-    // ===== NOUVEAUX ENDPOINTS POUR LA GESTION DES VENTES =====
-
     /**
-     * ✅ NOUVEAU : Vendre un actif
+     * Vendre un actif
      */
     @PostMapping("/{id}/sell")
     @PreAuthorize("hasRole('ROLE_USER')")
@@ -89,7 +86,7 @@ public class AssetController {
     }
 
     /**
-     * ✅ NOUVEAU : Récupère tous les actifs incluant les vendus
+     * Récupère tous les actifs incluant les vendus
      */
     @GetMapping("/all")
     public ResponseEntity<List<AssetDto>> getAllAssetsIncludingSold() {
@@ -97,7 +94,7 @@ public class AssetController {
     }
 
     /**
-     * ✅ NOUVEAU : Récupère uniquement les actifs vendus
+     * Récupère uniquement les actifs vendus
      */
     @GetMapping("/sold")
     public ResponseEntity<List<AssetDto>> getSoldAssets() {
@@ -105,17 +102,15 @@ public class AssetController {
     }
 
     /**
-     * ✅ NOUVEAU : Statistiques des ventes
+     * Statistiques des ventes
      */
     @GetMapping("/sales/statistics")
     public ResponseEntity<Map<String, Object>> getSalesStatistics() {
         return ResponseEntity.ok(assetService.getSalesStatistics());
     }
 
-    // ===== ENDPOINT DE SUPPRESSION MODIFIÉ =====
-
     /**
-     * ✅ SÉCURISÉ : Plus de suppression, redirection vers vente
+     * Plus de suppression, redirection vers vente
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
@@ -141,73 +136,4 @@ public class AssetController {
         }
     }
 
-    // ===== ENDPOINTS D'AIDE ET DOCUMENTATION =====
-
-    /**
-     * ✅ NOUVEAU : Politique de suppression
-     */
-    @GetMapping("/help/deletion-policy")
-    public ResponseEntity<Map<String, Object>> getDeletionPolicyHelp() {
-        Map<String, Object> policy = Map.of(
-                "title", "Politique de Suppression d'Actifs",
-                "policy", "La suppression définitive d'actifs n'est pas autorisée pour préserver l'historique financier",
-                "alternatives", Map.of(
-                        "sell", Map.of(
-                                "description", "Marquer l'actif comme vendu",
-                                "endpoint", "POST /api/assets/{id}/sell",
-                                "preserves_history", true
-                        ),
-                        "suspend", Map.of(
-                                "description", "Suspendre temporairement l'actif",
-                                "endpoint", "PUT /api/assets/{id}/status",
-                                "reversible", true
-                        )
-                ),
-                "benefits", List.of(
-                        "Préservation de l'historique des investissements",
-                        "Calcul précis des plus-values/moins-values",
-                        "Rapports fiscaux complets",
-                        "Traçabilité des opérations"
-                )
-        );
-
-        return ResponseEntity.ok(policy);
-    }
-
-    /**
-     * ✅ NOUVEAU : Guide de vente d'actifs
-     */
-    @GetMapping("/help/selling-guide")
-    public ResponseEntity<Map<String, Object>> getSellingGuide() {
-        Map<String, Object> guide = Map.of(
-                "title", "Guide de Vente d'Actifs",
-                "steps", List.of(
-                        "1. Vérifiez que l'actif est vendable (statut ACTIVE)",
-                        "2. Préparez les informations de vente (prix, date, notes)",
-                        "3. Appelez l'endpoint POST /api/assets/{id}/sell",
-                        "4. L'actif sera marqué comme SOLD avec calcul automatique des plus-values"
-                ),
-                "required_fields", Map.of(
-                        "salePrice", "Prix de vente (obligatoire, doit être > 0)",
-                        "saleDate", "Date de vente (optionnel, défaut = aujourd'hui)",
-                        "saleNotes", "Notes sur la vente (optionnel)"
-                ),
-                "calculated_fields", List.of(
-                        "capitalGain - Plus/moins-value réalisée",
-                        "capitalGainPercentage - Pourcentage de gain",
-                        "soldAt - Timestamp de l'opération"
-                ),
-                "example", Map.of(
-                        "method", "POST",
-                        "url", "/api/assets/123/sell",
-                        "body", Map.of(
-                                "salePrice", 15000.00,
-                                "saleDate", "2024-03-15",
-                                "saleNotes", "Vente suite à rééquilibrage du portefeuille"
-                        )
-                )
-        );
-
-        return ResponseEntity.ok(guide);
-    }
 }

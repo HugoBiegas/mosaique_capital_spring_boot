@@ -72,23 +72,20 @@ public class AssetService {
     }
 
     @Transactional(readOnly = true)
-    public List<AssetDto> getAssetsByType(AssetType type, boolean includeSubTypes) {
+    public List<AssetDto> getAssetsByType(AssetType type, boolean includeSubTypes, boolean includeSold) {
         User currentUser = getCurrentUser();
 
-        List<AssetTypeEntity> assetTypeEntities;
-        if (includeSubTypes) {
-            assetTypeEntities = assetTypeRepository.findByCodeStartingWith(type.name());
-        } else {
-            AssetTypeEntity assetTypeEntity = assetTypeRepository.findByCode(type.name())
-                    .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + type.name()));
-            assetTypeEntities = List.of(assetTypeEntity);
-        }
+        List<AssetTypeEntity> assetTypeEntities = includeSubTypes
+                ? assetTypeRepository.findByCodeStartingWith(type.name())
+                : List.of(assetTypeRepository.findByCode(type.name())
+                .orElseThrow(() -> new ResourceNotFoundException("Type d'actif non trouvé: " + type.name())));
 
-        // Par défaut, on ne récupère que les actifs actifs
-        List<Asset> assets = assetRepository.findByOwnerAndTypeInAndStatus(currentUser, assetTypeEntities, AssetStatus.ACTIVE);
+        List<Asset> assets = includeSold
+                ? assetRepository.findByOwnerAndTypeIn(currentUser, assetTypeEntities)
+                : assetRepository.findByOwnerAndTypeInAndStatus(currentUser, assetTypeEntities, AssetStatus.ACTIVE);
+
         return assetMapper.toDtoList(assets);
     }
-
     @Transactional(readOnly = true)
     public AssetDto getAssetById(Long id) {
         Asset asset = findAssetById(id);

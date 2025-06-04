@@ -420,7 +420,7 @@
 					"name": "📋 Assets - Operations Générales",
 					"item": [
 						{
-							"name": "Get All Assets",
+							"name": "Get All Assets (Active Only)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -435,6 +435,44 @@
 									"host": ["localhost"],
 									"port": "9999",
 									"path": ["api", "assets"]
+								}
+							}
+						},
+						{
+							"name": "✨ Get All Assets (Including Sold)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/all",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "all"]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Sold Assets Only",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/sold",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "sold"]
 								}
 							}
 						},
@@ -458,7 +496,7 @@
 							}
 						},
 						{
-							"name": "Delete Asset by ID",
+							"name": "❌ Delete Asset by ID (Blocked)",
 							"request": {
 								"method": "DELETE",
 								"header": [
@@ -473,6 +511,154 @@
 									"host": ["localhost"],
 									"port": "9999",
 									"path": ["api", "assets", "1"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "💸 Ventes d'Actifs (NOUVEAU)",
+					"item": [
+						{
+							"name": "✨ Sell Asset",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"salePrice\": 720000,\n    \"saleDate\": \"2024-12-15\",\n    \"saleNotes\": \"Vente suite à rééquilibrage du portefeuille immobilier\",\n    \"currency\": \"EUR\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:9999/api/assets/1/sell",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "1", "sell"]
+								}
+							}
+						},
+						{
+							"name": "✨ Sell Asset (Date actuelle)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"salePrice\": 38000,\n    \"saleNotes\": \"Vente anticipée avec plus-value\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:9999/api/assets/2/sell",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "2", "sell"]
+								}
+							}
+						},
+						{
+							"name": "✨ Sell Crypto Asset",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"salePrice\": 22500,\n    \"saleDate\": \"2024-12-10\",\n    \"saleNotes\": \"Vente crypto lors du pic de marché - stratégie DCA\"\n}"
+								},
+								"url": {
+									"raw": "http://localhost:9999/api/assets/3/sell",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "3", "sell"]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Sales Statistics",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/sales/statistics",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "sales", "statistics"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "📚 Documentation & Aide (NOUVEAU)",
+					"item": [
+						{
+							"name": "✨ Get Deletion Policy Help",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/help/deletion-policy",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "help", "deletion-policy"]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Selling Guide",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/help/selling-guide",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "help", "selling-guide"]
 								}
 							}
 						}
@@ -524,7 +710,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Résidence Principale Paris 16ème\",\n    \"description\": \"Appartement 4 pièces, 85m², résidence principale\",\n    \"type\": \"REAL_ESTATE_RESIDENTIAL\",\n    \"currentValue\": 650000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Résidence Principale Paris 16ème\",\n    \"description\": \"Appartement 4 pièces, 85m², résidence principale\",\n    \"type\": \"REAL_ESTATE_RESIDENTIAL\",\n    \"currentValue\": 650000,\n    \"purchasePrice\": 580000,\n    \"purchaseDate\": \"2020-03-15\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -551,7 +737,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Appartement Locatif Lyon\",\n    \"description\": \"Studio 25m² centre Lyon, loué 650€/mois\",\n    \"type\": \"REAL_ESTATE_RENTAL\",\n    \"currentValue\": 180000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Appartement Locatif Lyon\",\n    \"description\": \"Studio 25m² centre Lyon, loué 650€/mois\",\n    \"type\": \"REAL_ESTATE_RENTAL\",\n    \"currentValue\": 180000,\n    \"purchasePrice\": 165000,\n    \"purchaseDate\": \"2021-09-10\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -578,7 +764,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Local Commercial Marseille\",\n    \"description\": \"Bureau 120m² zone d'activité, loué à une entreprise\",\n    \"type\": \"REAL_ESTATE_COMMERCIAL\",\n    \"currentValue\": 420000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Local Commercial Marseille\",\n    \"description\": \"Bureau 120m² zone d'activité, loué à une entreprise\",\n    \"type\": \"REAL_ESTATE_COMMERCIAL\",\n    \"currentValue\": 420000,\n    \"purchasePrice\": 380000,\n    \"purchaseDate\": \"2019-11-20\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -605,7 +791,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Terrain Constructible Bordeaux\",\n    \"description\": \"Terrain 800m² constructible, zone pavillonnaire\",\n    \"type\": \"REAL_ESTATE_LAND\",\n    \"currentValue\": 95000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Terrain Constructible Bordeaux\",\n    \"description\": \"Terrain 800m² constructible, zone pavillonnaire\",\n    \"type\": \"REAL_ESTATE_LAND\",\n    \"currentValue\": 95000,\n    \"purchasePrice\": 85000,\n    \"purchaseDate\": \"2022-06-05\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -632,7 +818,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"SCPI Patrimmo Croissance\",\n    \"description\": \"Parts de SCPI diversifiée bureaux/commerces\",\n    \"type\": \"REAL_ESTATE_SCPI\",\n    \"currentValue\": 25000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"SCPI Patrimmo Croissance\",\n    \"description\": \"Parts de SCPI diversifiée bureaux/commerces\",\n    \"type\": \"REAL_ESTATE_SCPI\",\n    \"currentValue\": 25000,\n    \"purchasePrice\": 22000,\n    \"purchaseDate\": \"2023-01-15\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -644,7 +830,7 @@
 							}
 						},
 						{
-							"name": "Get Assets by Type - REAL_ESTATE",
+							"name": "Get Assets by Type - REAL_ESTATE (Active Only)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -654,11 +840,50 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/REAL_ESTATE?includeSubTypes=false",
+									"raw": "http://localhost:9999/api/assets/type/REAL_ESTATE?includeSubTypes=true&includeSold=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
-									"path": ["api", "assets", "type", "REAL_ESTATE"]
+									"path": ["api", "assets", "type", "REAL_ESTATE"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "true"
+										},
+										{
+											"key": "includeSold",
+											"value": "false"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Assets by Type - REAL_ESTATE (Include Sold)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/type/REAL_ESTATE?includeSubTypes=true&includeSold=true",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "type", "REAL_ESTATE"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "true"
+										},
+										{
+											"key": "includeSold",
+											"value": "true"
+										}
+									]
 								}
 							}
 						}
@@ -710,7 +935,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Portefeuille Actions CAC 40\",\n    \"description\": \"Actions : LVMH, Sanofi, Total, BNP Paribas\",\n    \"type\": \"FINANCIAL_STOCKS\",\n    \"currentValue\": 35000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Portefeuille Actions CAC 40\",\n    \"description\": \"Actions : LVMH, Sanofi, Total, BNP Paribas\",\n    \"type\": \"FINANCIAL_STOCKS\",\n    \"currentValue\": 35000,\n    \"purchasePrice\": 30000,\n    \"purchaseDate\": \"2023-03-10\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -737,7 +962,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Obligations d'État France\",\n    \"description\": \"OAT 10 ans et obligations européennes\",\n    \"type\": \"FINANCIAL_BONDS\",\n    \"currentValue\": 20000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Obligations d'État France\",\n    \"description\": \"OAT 10 ans et obligations européennes\",\n    \"type\": \"FINANCIAL_BONDS\",\n    \"currentValue\": 20000,\n    \"purchasePrice\": 19500,\n    \"purchaseDate\": \"2023-06-01\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -764,7 +989,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"ETF MSCI World\",\n    \"description\": \"Fonds indiciel diversifié international\",\n    \"type\": \"FINANCIAL_FUNDS\",\n    \"currentValue\": 28000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"ETF MSCI World\",\n    \"description\": \"Fonds indiciel diversifié international\",\n    \"type\": \"FINANCIAL_FUNDS\",\n    \"currentValue\": 28000,\n    \"purchasePrice\": 25000,\n    \"purchaseDate\": \"2022-12-15\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -791,7 +1016,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Assurance Vie Generali\",\n    \"description\": \"Contrat multisupport 70% UC / 30% fonds euros\",\n    \"type\": \"FINANCIAL_LIFE_INSURANCE\",\n    \"currentValue\": 45000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Assurance Vie Generali\",\n    \"description\": \"Contrat multisupport 70% UC / 30% fonds euros\",\n    \"type\": \"FINANCIAL_LIFE_INSURANCE\",\n    \"currentValue\": 45000,\n    \"purchasePrice\": 40000,\n    \"purchaseDate\": \"2021-01-20\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -818,7 +1043,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"PEA Actions Européennes\",\n    \"description\": \"Plan d'Épargne Actions avec ETF Europe\",\n    \"type\": \"FINANCIAL_PEA\",\n    \"currentValue\": 32000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"PEA Actions Européennes\",\n    \"description\": \"Plan d'Épargne Actions avec ETF Europe\",\n    \"type\": \"FINANCIAL_PEA\",\n    \"currentValue\": 32000,\n    \"purchasePrice\": 28000,\n    \"purchaseDate\": \"2022-09-05\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -845,7 +1070,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"PER Individuel\",\n    \"description\": \"Plan d'Épargne Retraite avec abondement\",\n    \"type\": \"FINANCIAL_RETIREMENT\",\n    \"currentValue\": 18000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"PER Individuel\",\n    \"description\": \"Plan d'Épargne Retraite avec abondement\",\n    \"type\": \"FINANCIAL_RETIREMENT\",\n    \"currentValue\": 18000,\n    \"purchasePrice\": 15000,\n    \"purchaseDate\": \"2023-01-01\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -857,7 +1082,7 @@
 							}
 						},
 						{
-							"name": "Get Assets by Type - FINANCIAL_STOCKS",
+							"name": "Get Assets by Type - FINANCIAL_STOCKS (Active Only)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -867,11 +1092,50 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/FINANCIAL_STOCKS?includeSubTypes=false",
+									"raw": "http://localhost:9999/api/assets/type/FINANCIAL_STOCKS?includeSubTypes=false&includeSold=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
-									"path": ["api", "assets", "type", "FINANCIAL_STOCKS"]
+									"path": ["api", "assets", "type", "FINANCIAL_STOCKS"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "false"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Assets by Type - FINANCIAL_STOCKS (Include Sold)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/type/FINANCIAL_STOCKS?includeSubTypes=false&includeSold=true",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "type", "FINANCIAL_STOCKS"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "true"
+										}
+									]
 								}
 							}
 						}
@@ -989,7 +1253,7 @@
 							}
 						},
 						{
-							"name": "Get Assets by Type - CASH_SAVINGS",
+							"name": "Get Assets by Type - CASH_SAVINGS (Active Only)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -999,11 +1263,50 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/CASH_SAVINGS?includeSubTypes=false",
+									"raw": "http://localhost:9999/api/assets/type/CASH_SAVINGS?includeSubTypes=false&includeSold=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
-									"path": ["api", "assets", "type", "CASH_SAVINGS"]
+									"path": ["api", "assets", "type", "CASH_SAVINGS"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "false"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Assets by Type - CASH_SAVINGS (Include Sold)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/type/CASH_SAVINGS?includeSubTypes=false&includeSold=true",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "type", "CASH_SAVINGS"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "true"
+										}
+									]
 								}
 							}
 						}
@@ -1028,7 +1331,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Portfolio Cryptomonnaies\",\n    \"description\": \"BTC (60%), ETH (30%), ADA (10%)\",\n    \"type\": \"CRYPTOCURRENCY\",\n    \"currentValue\": 15000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Portfolio Cryptomonnaies\",\n    \"description\": \"BTC (60%), ETH (30%), ADA (10%)\",\n    \"type\": \"CRYPTOCURRENCY\",\n    \"currentValue\": 15000,\n    \"purchasePrice\": 12000,\n    \"purchaseDate\": \"2023-02-01\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -1067,7 +1370,7 @@
 							}
 						},
 						{
-							"name": "Get Assets by Type - CRYPTOCURRENCY",
+							"name": "Get Assets by Type - CRYPTOCURRENCY (Active Only)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -1077,11 +1380,50 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/CRYPTOCURRENCY?includeSubTypes=false",
+									"raw": "http://localhost:9999/api/assets/type/CRYPTOCURRENCY?includeSubTypes=false&includeSold=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
-									"path": ["api", "assets", "type", "CRYPTOCURRENCY"]
+									"path": ["api", "assets", "type", "CRYPTOCURRENCY"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "false"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Assets by Type - CRYPTOCURRENCY (Include Sold)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/type/CRYPTOCURRENCY?includeSubTypes=false&includeSold=true",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "type", "CRYPTOCURRENCY"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "true"
+										}
+									]
 								}
 							}
 						}
@@ -1133,7 +1475,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Collection Tableaux Contemporains\",\n    \"description\": \"3 œuvres d'artistes émergents, expertisées\",\n    \"type\": \"OTHERS_ART\",\n    \"currentValue\": 8500,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Collection Tableaux Contemporains\",\n    \"description\": \"3 œuvres d'artistes émergents, expertisées\",\n    \"type\": \"OTHERS_ART\",\n    \"currentValue\": 8500,\n    \"purchasePrice\": 7000,\n    \"purchaseDate\": \"2022-04-10\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -1160,7 +1502,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Lingots d'Or 1kg\",\n    \"description\": \"2 lingots or pur 999.9, stockage sécurisé\",\n    \"type\": \"OTHERS_PRECIOUS\",\n    \"currentValue\": 65000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Lingots d'Or 1kg\",\n    \"description\": \"2 lingots or pur 999.9, stockage sécurisé\",\n    \"type\": \"OTHERS_PRECIOUS\",\n    \"currentValue\": 65000,\n    \"purchasePrice\": 60000,\n    \"purchaseDate\": \"2021-08-15\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -1187,7 +1529,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Tesla Model S Plaid\",\n    \"description\": \"Véhicule électrique haut de gamme, 2023, 15000km\",\n    \"type\": \"OTHERS_VEHICLES\",\n    \"currentValue\": 85000,\n    \"currency\": \"EUR\"\n}"
+									"raw": "{\n    \"name\": \"Tesla Model S Plaid\",\n    \"description\": \"Véhicule électrique haut de gamme, 2023, 15000km\",\n    \"type\": \"OTHERS_VEHICLES\",\n    \"currentValue\": 85000,\n    \"purchasePrice\": 95000,\n    \"purchaseDate\": \"2023-05-20\",\n    \"currency\": \"EUR\"\n}"
 								},
 								"url": {
 									"raw": "http://localhost:9999/api/assets",
@@ -1199,7 +1541,7 @@
 							}
 						},
 						{
-							"name": "Get Assets by Type - OTHERS_ART",
+							"name": "Get Assets by Type - OTHERS_ART (Active Only)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -1209,11 +1551,50 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/OTHERS_ART?includeSubTypes=false",
+									"raw": "http://localhost:9999/api/assets/type/OTHERS_ART?includeSubTypes=false&includeSold=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
-									"path": ["api", "assets", "type", "OTHERS_ART"]
+									"path": ["api", "assets", "type", "OTHERS_ART"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "false"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Assets by Type - OTHERS_ART (Include Sold)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/type/OTHERS_ART?includeSubTypes=false&includeSold=true",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "type", "OTHERS_ART"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "true"
+										}
+									]
 								}
 							}
 						}
@@ -1358,7 +1739,7 @@
 							}
 						},
 						{
-							"name": "Get Assets by Type - LIABILITIES_MORTGAGE",
+							"name": "Get Assets by Type - LIABILITIES_MORTGAGE (Active Only)",
 							"request": {
 								"method": "GET",
 								"header": [
@@ -1368,11 +1749,50 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:9999/api/assets/type/LIABILITIES_MORTGAGE?includeSubTypes=false",
+									"raw": "http://localhost:9999/api/assets/type/LIABILITIES_MORTGAGE?includeSubTypes=false&includeSold=false",
 									"protocol": "http",
 									"host": ["localhost"],
 									"port": "9999",
-									"path": ["api", "assets", "type", "LIABILITIES_MORTGAGE"]
+									"path": ["api", "assets", "type", "LIABILITIES_MORTGAGE"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "false"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "✨ Get Assets by Type - LIABILITIES_MORTGAGE (Include Sold)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9999/api/assets/type/LIABILITIES_MORTGAGE?includeSubTypes=false&includeSold=true",
+									"protocol": "http",
+									"host": ["localhost"],
+									"port": "9999",
+									"path": ["api", "assets", "type", "LIABILITIES_MORTGAGE"],
+									"query": [
+										{
+											"key": "includeSubTypes",
+											"value": "false"
+										},
+										{
+											"key": "includeSold",
+											"value": "true"
+										}
+									]
 								}
 							}
 						}

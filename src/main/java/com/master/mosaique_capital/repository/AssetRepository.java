@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -19,7 +20,7 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 
     List<Asset> findByOwner(User owner);
 
-    List<Asset> findByOwnerAndType(User owner, AssetTypeEntity type);
+    List<Asset> findByOwnerAndTypeIn(User owner, Collection<AssetTypeEntity> type);
 
 
     /**
