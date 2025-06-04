@@ -149,6 +149,377 @@ docker-compose up -d mysql redis
 # Lancer l'application en mode dev
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+---
+# 🏗️ Architecture Mosaïque Capital - Schéma Complet
+
+## 📋 Vue d'ensemble de l'architecture
+
+```mermaid
+graph TB
+    subgraph "🌐 Frontend (Client)"
+        UI[Interface Utilisateur]
+        AUTH_UI[Pages Authentification]
+        BANKING_UI[Interface Bancaire]
+        PORTFOLIO_UI[Gestion Portfolio]
+        DASHBOARD_UI[Dashboard]
+    end
+
+    subgraph "🔐 Couche Sécurité"
+        JWT[JWT Filter]
+        MFA[MFA Verification]
+        CORS[CORS Configuration]
+    end
+
+    subgraph "🚀 Backend Spring Boot"
+        subgraph "📡 Contrôleurs REST"
+            AUTH_CTRL[AuthController]
+            MFA_CTRL[MfaController]
+            BANKING_CTRL[BankingController]
+            WEBHOOK_CTRL[WebhookController]
+            ASSET_CTRL[AssetController]
+            PORTFOLIO_CTRL[PortfolioController]
+            VALUATION_CTRL[ValuationController]
+        end
+        
+        subgraph "⚙️ Services Métier"
+            AUTH_SVC[AuthService]
+            MFA_SVC[MfaService]
+            BANKING_SVC[BankConnectionService]
+            ACCOUNT_SVC[BankAccountService]
+            TRANSACTION_SVC[BankTransactionService]
+            SYNC_SVC[BankAccountSyncService]
+            ASSET_SVC[AssetService]
+            VALUATION_SVC[AssetValuationService]
+            SCHEDULER[BankingSyncScheduler]
+        end
+        
+        subgraph "🔌 Services Externes"
+            AGGREGATION[BankAggregationService]
+            TINK[TinkService]
+            BUDGET_INSIGHT[BudgetInsightService]
+            BRIDGE[BridgeApiService]
+            LINXO[LinxoService]
+        end
+        
+        subgraph "🗃️ Repositories"
+            USER_REPO[UserRepository]
+            BANK_REPO[BankConnectionRepository]
+            ACCOUNT_REPO[BankAccountRepository]
+            TRANSACTION_REPO[BankTransactionRepository]
+            ASSET_REPO[AssetRepository]
+            VALUATION_REPO[ValuationRepository]
+        end
+    end
+
+    subgraph "💾 Couche Données"
+        MYSQL[(MySQL Database)]
+        REDIS[(Redis Cache)]
+    end
+
+    subgraph "🏦 APIs Bancaires Externes"
+        TINK_API[Tink API<br/>🆓 GRATUIT]
+        BI_API[Budget Insight API]
+        BRIDGE_API[Bridge API]
+        LINXO_API[Linxo API]
+    end
+
+    subgraph "🔄 Resilience & Monitoring"
+        CIRCUIT[Circuit Breaker]
+        RETRY[Retry Logic]
+        RATE_LIMIT[Rate Limiter]
+        HEALTH[Health Checks]
+    end
+
+    %% Connexions Frontend → Backend
+    UI --> JWT
+    AUTH_UI --> AUTH_CTRL
+    BANKING_UI --> BANKING_CTRL
+    PORTFOLIO_UI --> ASSET_CTRL
+    PORTFOLIO_UI --> PORTFOLIO_CTRL
+    DASHBOARD_UI --> VALUATION_CTRL
+
+    %% Sécurité
+    JWT --> AUTH_CTRL
+    JWT --> MFA_CTRL
+    JWT --> BANKING_CTRL
+    JWT --> ASSET_CTRL
+    MFA --> MFA_SVC
+
+    %% Services
+    AUTH_CTRL --> AUTH_SVC
+    MFA_CTRL --> MFA_SVC
+    BANKING_CTRL --> BANKING_SVC
+    BANKING_CTRL --> ACCOUNT_SVC
+    BANKING_CTRL --> TRANSACTION_SVC
+    ASSET_CTRL --> ASSET_SVC
+    PORTFOLIO_CTRL --> ASSET_SVC
+    VALUATION_CTRL --> VALUATION_SVC
+
+    %% Banking Flow
+    BANKING_SVC --> AGGREGATION
+    AGGREGATION --> TINK
+    AGGREGATION --> BUDGET_INSIGHT
+    AGGREGATION --> BRIDGE
+    AGGREGATION --> LINXO
+    SYNC_SVC --> AGGREGATION
+    SCHEDULER --> SYNC_SVC
+
+    %% Resilience
+    TINK --> CIRCUIT
+    BUDGET_INSIGHT --> CIRCUIT
+    BRIDGE --> CIRCUIT
+    LINXO --> CIRCUIT
+    CIRCUIT --> RETRY
+    RETRY --> RATE_LIMIT
+
+    %% APIs Externes
+    TINK --> TINK_API
+    BUDGET_INSIGHT --> BI_API
+    BRIDGE --> BRIDGE_API
+    LINXO --> LINXO_API
+
+    %% Webhooks
+    TINK_API -.->|Callback| WEBHOOK_CTRL
+    BI_API -.->|Webhook| WEBHOOK_CTRL
+    BRIDGE_API -.->|Webhook| WEBHOOK_CTRL
+
+    %% Données
+    AUTH_SVC --> USER_REPO
+    BANKING_SVC --> BANK_REPO
+    ACCOUNT_SVC --> ACCOUNT_REPO
+    TRANSACTION_SVC --> TRANSACTION_REPO
+    ASSET_SVC --> ASSET_REPO
+    VALUATION_SVC --> VALUATION_REPO
+
+    %% Base de données
+    USER_REPO --> MYSQL
+    BANK_REPO --> MYSQL
+    ACCOUNT_REPO --> MYSQL
+    TRANSACTION_REPO --> MYSQL
+    ASSET_REPO --> MYSQL
+    VALUATION_REPO --> MYSQL
+
+    %% Cache
+    AUTH_SVC --> REDIS
+    JWT --> REDIS
+    TINK --> REDIS
+    BUDGET_INSIGHT --> REDIS
+
+    classDef frontend fill:#e1f5fe
+    classDef security fill:#fff3e0
+    classDef controller fill:#f3e5f5
+    classDef service fill:#e8f5e8
+    classDef external fill:#fff9c4
+    classDef database fill:#fce4ec
+    classDef resilience fill:#f1f8e9
+
+    class UI,AUTH_UI,BANKING_UI,PORTFOLIO_UI,DASHBOARD_UI frontend
+    class JWT,MFA,CORS security
+    class AUTH_CTRL,MFA_CTRL,BANKING_CTRL,WEBHOOK_CTRL,ASSET_CTRL,PORTFOLIO_CTRL,VALUATION_CTRL controller
+    class AUTH_SVC,MFA_SVC,BANKING_SVC,ACCOUNT_SVC,TRANSACTION_SVC,SYNC_SVC,ASSET_SVC,VALUATION_SVC,SCHEDULER service
+    class AGGREGATION,TINK,BUDGET_INSIGHT,BRIDGE,LINXO,TINK_API,BI_API,BRIDGE_API,LINXO_API external
+    class MYSQL,REDIS,USER_REPO,BANK_REPO,ACCOUNT_REPO,TRANSACTION_REPO,ASSET_REPO,VALUATION_REPO database
+    class CIRCUIT,RETRY,RATE_LIMIT,HEALTH resilience
+```
+
+## 🔄 Flux d'API Détaillés
+
+### 1. 🔐 Flux d'Authentification
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant A as AuthController
+    participant AS as AuthService
+    participant U as UserRepository
+    participant J as JwtTokenProvider
+    participant R as Redis
+    participant M as MfaService
+
+    %% Registration
+    C->>+A: POST /api/auth/signup
+    A->>+AS: registerUser(request)
+    AS->>+U: existsByUsername/Email
+    U-->>-AS: boolean
+    AS->>+U: save(user)
+    U-->>-AS: User
+    AS-->>-A: void
+    A-->>-C: 201 Created
+
+    %% Login
+    C->>+A: POST /api/auth/login
+    A->>+AS: authenticateUser(request)
+    AS->>+U: findByUsername
+    U-->>-AS: User
+    alt MFA Enabled
+        AS->>+M: verifyMfaCode
+        M-->>-AS: boolean
+    end
+    AS->>+J: createToken/createRefreshToken
+    J-->>-AS: tokens
+    AS->>+R: cache token
+    R-->>-AS: ok
+    AS-->>-A: JwtResponse
+    A-->>-C: 200 OK + tokens
+
+    %% MFA Setup
+    C->>+A: POST /api/mfa/setup
+    A->>+M: generateMfaSetup
+    M-->>-A: MfaSetupResponse
+    A-->>-C: QR Code + secret
+```
+
+### 2. 🏦 Flux d'Agrégation Bancaire (Tink)
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant BC as BankingController
+    participant BCS as BankConnectionService
+    participant BAS as BankAggregationService
+    participant TS as TinkService
+    participant TA as Tink API
+    participant SYNC as SyncService
+    participant DB as Database
+
+    %% Initiation connexion
+    C->>+BC: POST /api/banking/connections
+    BC->>+BCS: initiateConnection
+    BCS->>+BAS: initiateConnection("tink")
+    BAS->>+TS: initiateConnection
+    TS->>+TA: POST /token/new
+    TA-->>-TS: access_token
+    TS->>+TA: GET /institutions?country=FR
+    TA-->>-TS: banks list
+    TS->>+TA: POST /agreements/enduser
+    TA-->>-TS: agreement_id
+    TS->>+TA: POST /requisitions
+    TA-->>-TS: requisition_id + link
+    TS-->>-BAS: connection_id
+    BAS-->>-BCS: connection_id
+    BCS->>+DB: save(connection)
+    DB-->>-BCS: saved
+    BCS-->>-BC: BankConnectionDto
+    BC-->>-C: 201 Created + redirect URL
+
+    %% Callback après auth
+    TA->>+BC: GET /webhooks/tink/callback?ref=xxx
+    BC-->>-C: Redirect to frontend
+
+    %% Polling status
+    loop Every 3-5 seconds
+        C->>+BC: GET /webhooks/tink/status/{id}
+        BC->>+BCS: isConnectionHealthy
+        BCS->>+TS: checkHealth
+        TS->>+TA: GET /requisitions/{id}
+        TA-->>-TS: status
+        TS-->>-BCS: boolean
+        BCS-->>-BC: status
+        BC-->>-C: connection status
+    end
+
+    %% Auto sync when active
+    BCS->>+SYNC: syncAccountsForConnection
+    SYNC->>+TS: getAccounts
+    TS->>+TA: GET /accounts
+    TA-->>-TS: accounts
+    TS-->>-SYNC: ExternalAccountDto[]
+    SYNC->>+TS: getTransactions
+    TS->>+TA: GET /accounts/{id}/transactions
+    TA-->>-TS: transactions
+    TS-->>-SYNC: ExternalTransactionDto[]
+    SYNC->>+DB: save accounts + transactions
+    DB-->>-SYNC: saved
+    SYNC-->>-BCS: BankSyncResponse
+```
+
+### 3. 💰 Flux de Gestion des Assets
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant AC as AssetController
+    participant AS as AssetService
+    participant AR as AssetRepository
+    participant ATR as AssetTypeRepository
+    participant VC as ValuationController
+    participant VS as ValuationService
+    participant VR as ValuationRepository
+
+    %% Create Asset
+    C->>+AC: POST /api/assets
+    AC->>+AS: createAsset(request)
+    AS->>+ATR: findByCode(type)
+    ATR-->>-AS: AssetTypeEntity
+    AS->>+AR: save(asset)
+    AR-->>-AS: Asset
+    AS-->>-AC: AssetDto
+    AC-->>-C: 201 Created
+
+    %% Get Portfolio Summary
+    C->>+AC: GET /api/portfolio/summary
+    AC->>+AS: getTotalPatrimony
+    AS->>+AR: sumTotalPatrimony
+    AR-->>-AS: BigDecimal
+    AS->>+AR: getAssetDistributionByType
+    AR-->>-AS: List<Projection>
+    AS-->>-AC: summary data
+    AC-->>-C: portfolio summary
+
+    %% Add Valuation
+    C->>+VC: POST /api/valuations
+    VC->>+VS: createValuation
+    VS->>+AS: findAssetById
+    AS->>+AR: findById
+    AR-->>-AS: Asset
+    AS-->>-VS: Asset
+    VS->>+VR: save(valuation)
+    VR-->>-VS: AssetValuation
+    VS->>+AS: updateAsset (if current date)
+    AS-->>-VS: updated
+    VS-->>-VC: ValuationDto
+    VC-->>-C: 201 Created
+```
+
+### 4. 🔄 Flux de Synchronisation Automatique
+
+```mermaid
+sequenceDiagram
+    participant S as Scheduler
+    participant SYNC as SyncService
+    participant BR as BankConnectionRepo
+    participant BAS as BankAggregationService
+    participant EXT as External APIs
+    participant N as NotificationService
+    participant DB as Database
+
+    %% Scheduled sync (every 6h)
+    S->>+SYNC: scheduledSyncAll()
+    SYNC->>+BR: findConnectionsNeedingSync
+    BR-->>-SYNC: List<BankConnection>
+    
+    loop For each batch
+        SYNC->>+BAS: syncAccountsForConnection
+        BAS->>+EXT: getAccounts + getTransactions
+        EXT-->>-BAS: account/transaction data
+        BAS->>+DB: update accounts/transactions
+        DB-->>-BAS: saved
+        BAS-->>-SYNC: BankSyncResponse
+        
+        alt If many new transactions
+            SYNC->>+N: notifyNewTransactions
+            N-->>-SYNC: notification sent
+        end
+        
+        alt If sync fails repeatedly
+            SYNC->>+DB: mark connection as ERROR
+            DB-->>-SYNC: updated
+            SYNC->>+N: notifyConnectionError
+            N-->>-SYNC: notification sent
+        end
+    end
+    SYNC-->>-S: sync completed
+```
 
 ---
 
